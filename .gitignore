@@ -1,6 +1,17 @@
-# Kindle data files (contienen datos personales)
+# Kindle data files (datos personales)
 My_Clippings.txt
 *.kindle-index.json
+
+# Base de datos local
+data/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
 
 # macOS
 .DS_Store
