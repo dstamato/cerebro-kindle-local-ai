@@ -1,0 +1,14 @@
+# Kindle data files (contienen datos personales)
+My_Clippings.txt
+*.kindle-index.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
