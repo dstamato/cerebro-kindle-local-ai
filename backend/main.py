@@ -11,8 +11,11 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from categorizer import CAT_META, CAT_ORDER, assign_categories
+import httpx
+
 from db import (clear_and_insert, get_book_clippings, get_books,
-                get_books_by_category, get_stats, init_db, load_corpus)
+                get_books_by_category, get_cover_url, get_stats,
+                init_db, load_corpus, save_cover_url)
 from parser import filter_clippings, parse_clippings
 
 FRONTEND = Path(__file__).parent.parent / "frontend"
@@ -116,6 +119,45 @@ async def api_library():
         })
 
     return result
+
+
+@app.get("/api/books/{book_id}/cover")
+async def api_cover(book_id: int):
+    cached = get_cover_url(book_id)
+    if cached is not None:          # already fetched (empty string = not found)
+        return {"url": cached}
+
+    books = get_books()
+    book = next((b for b in books if b["id"] == book_id), None)
+    if not book:
+        raise HTTPException(404, "Libro no encontrado")
+
+    url = await _fetch_cover(book["title"], book["author"])
+    save_cover_url(book_id, url or "")
+    return {"url": url or ""}
+
+
+async def _fetch_cover(title: str, author: str) -> str | None:
+    q = f"intitle:{title}"
+    if author:
+        q += f"+inauthor:{author}"
+    try:
+        async with httpx.AsyncClient(timeout=6) as client:
+            resp = await client.get(
+                "https://www.googleapis.com/books/v1/volumes",
+                params={"q": q, "maxResults": 1,
+                        "fields": "items/volumeInfo/imageLinks"},
+            )
+        if resp.status_code != 200:
+            return None
+        items = resp.json().get("items", [])
+        if not items:
+            return None
+        links = items[0].get("volumeInfo", {}).get("imageLinks", {})
+        url = links.get("thumbnail") or links.get("smallThumbnail")
+        return url.replace("http://", "https://") if url else None
+    except Exception:
+        return None
 
 
 @app.get("/api/books/{book_id}/clippings")

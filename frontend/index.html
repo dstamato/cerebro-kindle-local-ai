@@ -21,7 +21,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; font-size: 15px; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; font-size: 16px; }
 
   /* ── UPLOAD ── */
   #screen-upload { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; gap: 2rem; }
@@ -101,7 +101,7 @@
   .h-card.low  { border-left-color: var(--paper-3); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  .h-text { font-family: 'Playfair Display', serif; font-size: 0.93rem; line-height: 1.75; color: var(--ink-2); margin-bottom: 0.65rem; }
+  .h-text { font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.8; color: var(--ink-2); margin-bottom: 0.65rem; }
   .h-text mark { background: #fff3c4; color: var(--ink); padding: 0 2px; border-radius: 2px; }
   .h-meta { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
   .h-book { font-size: 0.75rem; font-weight: 500; color: var(--accent); }
@@ -149,12 +149,15 @@
   .lib-wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
   .lib-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
   .lib-search:focus { border-color: var(--accent); }
-  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
-  .book-card-lib { background: white; border: 0.5px solid var(--paper-3); border-radius: 4px; padding: 0.75rem 0.9rem; cursor: pointer; transition: all 0.15s; border-left: 3px solid var(--accent); }
-  .book-card-lib:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.09); transform: translateY(-1px); }
-  .book-title-lib { font-size: 0.82rem; font-weight: 500; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
-  .book-author-lib { font-size: 0.72rem; color: var(--ink-3); font-style: italic; }
-  .book-count-lib { font-size: 0.68rem; color: var(--ink-3); margin-top: 4px; }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .book-card-lib { background: white; border: 0.5px solid var(--paper-3); border-radius: 4px; padding: 0.8rem 0.9rem; cursor: pointer; transition: all 0.15s; border-left: 3px solid var(--accent); display: flex; gap: 0.75rem; align-items: flex-start; }
+  .book-card-lib:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.1); transform: translateY(-1px); }
+  .book-cover-thumb { width: 44px; min-height: 62px; flex-shrink: 0; border-radius: 2px; background: var(--paper-2); background-size: cover; background-position: center; border: 0.5px solid var(--paper-3); }
+  .book-cover-thumb.loaded { background-color: transparent; border-color: transparent; }
+  .book-card-info { flex: 1; min-width: 0; }
+  .book-title-lib { font-size: 0.88rem; font-weight: 500; color: var(--ink); line-height: 1.35; margin-bottom: 4px; }
+  .book-author-lib { font-size: 0.78rem; color: var(--ink-3); font-style: italic; }
+  .book-count-lib { font-size: 0.72rem; color: var(--ink-3); margin-top: 5px; }
 
   /* Library — detail view (full-page dentro del tab) */
   .lib-detail-header {
@@ -162,6 +165,8 @@
     background: var(--paper); border-bottom: 1px solid var(--line);
     padding: 0.9rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
   }
+  #detail-cover { width: 48px; height: 68px; border-radius: 3px; background: var(--paper-2); background-size: cover; background-position: center; border: 0.5px solid var(--paper-3); flex-shrink: 0; display: none; }
+  #detail-cover.visible { display: block; }
   .btn-back { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.9rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--ink-2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn-back:hover { border-color: var(--ink-3); color: var(--ink); }
   .lib-detail-info { flex: 1; min-width: 0; }
@@ -174,7 +179,7 @@
   .lib-detail-body { max-width: 800px; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
   .detail-filter { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
   .detail-filter:focus { border-color: var(--accent); }
-  .clip-item { border-left: 2px solid var(--paper-3); padding: 0.5rem 0.9rem; margin-bottom: 0.7rem; font-family: 'Playfair Display', serif; font-size: 0.9rem; line-height: 1.75; color: var(--ink-2); transition: border-color 0.15s; }
+  .clip-item { border-left: 2px solid var(--paper-3); padding: 0.55rem 0.9rem; margin-bottom: 0.75rem; font-family: 'Playfair Display', serif; font-size: 0.97rem; line-height: 1.8; color: var(--ink-2); transition: border-color 0.15s; }
   .clip-item:hover { border-left-color: var(--accent); }
   .clip-item mark { background: #fff3c4; color: var(--ink); padding: 0 2px; border-radius: 2px; }
   .clips-more { font-size: 0.78rem; color: var(--ink-3); text-align: center; padding: 0.7rem; cursor: pointer; border: 1px dashed var(--paper-3); border-radius: 3px; margin-top: 0.4rem; }
@@ -296,6 +301,7 @@
     <div id="lib-detail-view">
       <div class="lib-detail-header">
         <button class="btn-back" onclick="backToLibrary()">← Biblioteca</button>
+        <div id="detail-cover"></div>
         <div class="lib-detail-info">
           <h2 id="detail-view-title"></h2>
           <div class="lib-detail-meta">
@@ -612,15 +618,21 @@ function renderCategories(data, allOpen = false) {
       <div class="cat-books" id="cat-books-${ci}">
         <div class="book-grid">
           ${cat.books.map(b => `
-            <div class="book-card-lib" onclick="showBook(${b.id})" style="border-left-color:${cat.color}">
-              <div class="book-title-lib">${esc(b.title)}</div>
-              <div class="book-author-lib">${esc(b.author)}</div>
-              <div class="book-count-lib">${b.clip_count} subrayados</div>
+            <div class="book-card-lib" onclick="showBook(${b.id})" style="border-left-color:${cat.color}" data-book-id="${b.id}">
+              <div class="book-cover-thumb" id="cover-${b.id}"></div>
+              <div class="book-card-info">
+                <div class="book-title-lib">${esc(b.title)}</div>
+                <div class="book-author-lib">${esc(b.author)}</div>
+                <div class="book-count-lib">${b.clip_count} subrayados</div>
+              </div>
             </div>`).join('')}
         </div>
       </div>
     </div>`;
   }).join('');
+
+  // Start lazy-loading covers for visible cards
+  requestAnimationFrame(observeCovers);
 }
 
 function toggleCat(ci) {
@@ -644,6 +656,20 @@ async function showBook(bookId) {
   document.getElementById('detail-view-count').textContent  = `${book.clip_count} subrayados`;
   document.getElementById('detail-filter').value = '';
   document.getElementById('clips-list').innerHTML = '<div class="lib-loading">Cargando subrayados...</div>';
+
+  // Tapa en el header del detalle
+  const coverEl = document.getElementById('detail-cover');
+  coverEl.classList.remove('visible');
+  coverEl.style.backgroundImage = '';
+  fetchCover(bookId).then(url => {
+    if (url) {
+      coverEl.style.backgroundImage = `url(${url})`;
+      coverEl.style.backgroundColor = 'transparent';
+      coverEl.style.borderColor = 'transparent';
+      coverEl.classList.add('visible');
+    }
+  });
+
   window.scrollTo(0, 0);
 
   currentBookId = bookId;
@@ -702,7 +728,43 @@ function switchTab(tab) {
   document.getElementById('screen-library').style.display   = tab === 'library' ? 'block' : 'none';
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Covers ─────────────────────────────────────────────────────────────────
+const _coverCache = {};
+
+async function fetchCover(bookId) {
+  if (bookId in _coverCache) return _coverCache[bookId];
+  try {
+    const { url } = await fetch(`/api/books/${bookId}/cover`).then(r => r.json());
+    _coverCache[bookId] = url || '';
+    return url || '';
+  } catch { return ''; }
+}
+
+// IntersectionObserver: load covers as cards scroll into view
+const _coverObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const card = entry.target;
+    const bookId = parseInt(card.dataset.bookId);
+    _coverObserver.unobserve(card);
+    fetchCover(bookId).then(url => {
+      if (!url) return;
+      const thumb = document.getElementById(`cover-${bookId}`);
+      if (thumb) {
+        thumb.style.backgroundImage = `url(${url})`;
+        thumb.classList.add('loaded');
+      }
+    });
+  });
+}, { rootMargin: '200px' });
+
+function observeCovers() {
+  document.querySelectorAll('.book-card-lib[data-book-id]').forEach(el => {
+    _coverObserver.observe(el);
+  });
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
 function highlightKw(text, terms) {
   let result = esc(text);
   terms.forEach(t => {

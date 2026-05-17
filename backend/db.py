@@ -32,12 +32,16 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_clip_book ON clippings(book_id);
         """)
-        # Migration: add category column to existing DBs that don't have it
-        try:
-            conn.execute("ALTER TABLE books ADD COLUMN category TEXT NOT NULL DEFAULT 'Sin categoría'")
-            conn.commit()
-        except Exception:
-            pass
+        # Migrations for existing DBs
+        for stmt in [
+            "ALTER TABLE books ADD COLUMN category  TEXT NOT NULL DEFAULT 'Sin categoría'",
+            "ALTER TABLE books ADD COLUMN cover_url TEXT",
+        ]:
+            try:
+                conn.execute(stmt)
+                conn.commit()
+            except Exception:
+                pass
 
 
 def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
@@ -124,6 +128,19 @@ def get_book_clippings(book_id: int) -> list[dict]:
             (book_id,),
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+def get_cover_url(book_id: int) -> str | None:
+    """Returns None if never fetched, '' if fetched but not found, URL if found."""
+    with get_conn() as conn:
+        row = conn.execute("SELECT cover_url FROM books WHERE id = ?", (book_id,)).fetchone()
+    return row["cover_url"] if row else None
+
+
+def save_cover_url(book_id: int, url: str) -> None:
+    with get_conn() as conn:
+        conn.execute("UPDATE books SET cover_url = ? WHERE id = ?", (url, book_id))
+        conn.commit()
 
 
 def get_stats() -> dict:
