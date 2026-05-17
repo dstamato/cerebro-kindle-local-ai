@@ -138,6 +138,31 @@ async def api_cover(book_id: int):
 
 
 async def _fetch_cover(title: str, author: str) -> str | None:
+    return await _fetch_cover_openlibrary(title, author) or await _fetch_cover_google(title, author)
+
+
+async def _fetch_cover_openlibrary(title: str, author: str) -> str | None:
+    try:
+        q = title
+        if author:
+            q += f" {author}"
+        async with httpx.AsyncClient(timeout=8) as client:
+            resp = await client.get(
+                "https://openlibrary.org/search.json",
+                params={"q": q, "fields": "cover_i", "limit": 1},
+            )
+        if resp.status_code != 200:
+            return None
+        docs = resp.json().get("docs", [])
+        if not docs or not docs[0].get("cover_i"):
+            return None
+        cover_id = docs[0]["cover_i"]
+        return f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg"
+    except Exception:
+        return None
+
+
+async def _fetch_cover_google(title: str, author: str) -> str | None:
     q = f"intitle:{title}"
     if author:
         q += f"+inauthor:{author}"
