@@ -127,31 +127,44 @@
   .tab-btn:hover { color: var(--ink); }
   .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
 
-  /* Library */
+  /* Library — grid view */
   #screen-library { display: none; }
+  #lib-grid-view  { display: block; }
+  #lib-detail-view { display: none; }
   .lib-wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
   .lib-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
   .lib-search:focus { border-color: var(--accent); }
-  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
   .book-card-lib { background: white; border: 0.5px solid var(--paper-3); border-radius: 4px; padding: 0.75rem 0.9rem; cursor: pointer; transition: all 0.15s; border-left: 3px solid var(--accent); }
-  .book-card-lib:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .book-card-lib.selected { background: #fafaf8; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .book-card-lib:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.09); transform: translateY(-1px); }
   .book-title-lib { font-size: 0.82rem; font-weight: 500; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
   .book-author-lib { font-size: 0.72rem; color: var(--ink-3); font-style: italic; }
   .book-count-lib { font-size: 0.68rem; color: var(--ink-3); margin-top: 4px; }
-  .book-detail { background: white; border-radius: 5px; padding: 1.1rem 1.3rem; margin-top: 1rem; border: 0.5px solid var(--paper-3); display: none; }
-  .book-detail.open { display: block; }
-  .detail-header { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-  .detail-title  { font-family: 'Playfair Display', serif; font-size: 0.98rem; font-weight: 600; color: var(--ink); }
-  .detail-author { font-size: 0.75rem; color: var(--ink-3); font-style: italic; }
-  .detail-count  { margin-left: auto; font-size: 0.7rem; color: var(--ink-3); }
-  .detail-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.38rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink); background: var(--paper); outline: none; margin-bottom: 0.7rem; }
-  .detail-search:focus { border-color: var(--accent); }
-  .clip-item { border-left: 2px solid var(--paper-3); padding: 0.45rem 0.75rem; margin-bottom: 0.55rem; font-family: 'Playfair Display', serif; font-size: 0.83rem; line-height: 1.65; color: var(--ink-2); }
+
+  /* Library — detail view (full-page dentro del tab) */
+  .lib-detail-header {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 0.9rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .btn-back { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.9rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--ink-2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-back:hover { border-color: var(--ink-3); color: var(--ink); }
+  .lib-detail-info { flex: 1; min-width: 0; }
+  .lib-detail-info h2 { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lib-detail-meta { font-size: 0.75rem; color: var(--ink-3); margin-top: 2px; }
+  .lib-detail-meta span + span::before { content: ' · '; }
+  .btn-search-book { padding: 0.4rem 0.9rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--accent); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-search-book:hover { background: #e8f0fb; border-color: var(--accent); }
+
+  .lib-detail-body { max-width: 800px; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
+  .detail-filter { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
+  .detail-filter:focus { border-color: var(--accent); }
+  .clip-item { border-left: 2px solid var(--paper-3); padding: 0.5rem 0.9rem; margin-bottom: 0.7rem; font-family: 'Playfair Display', serif; font-size: 0.9rem; line-height: 1.75; color: var(--ink-2); transition: border-color 0.15s; }
+  .clip-item:hover { border-left-color: var(--accent); }
   .clip-item mark { background: #fff3c4; color: var(--ink); padding: 0 2px; border-radius: 2px; }
-  .clips-more { font-size: 0.78rem; color: var(--ink-3); text-align: center; padding: 0.6rem; cursor: pointer; border: 1px dashed var(--paper-3); border-radius: 3px; margin-top: 0.4rem; }
+  .clips-more { font-size: 0.78rem; color: var(--ink-3); text-align: center; padding: 0.7rem; cursor: pointer; border: 1px dashed var(--paper-3); border-radius: 3px; margin-top: 0.4rem; }
   .clips-more:hover { color: var(--accent); border-color: var(--accent); }
-  .lib-loading { font-size: 0.82rem; color: var(--ink-3); text-align: center; padding: 2rem; }
+  .lib-loading { font-size: 0.82rem; color: var(--ink-3); text-align: center; padding: 3rem; }
 </style>
 </head>
 <body>
@@ -253,11 +266,34 @@
   </div>
 
   <div id="screen-library">
-    <div class="lib-wrap">
-      <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
-      <div class="book-grid" id="book-grid"></div>
-      <div class="book-detail" id="book-detail"></div>
+
+    <!-- Vista 1: Grid de libros -->
+    <div id="lib-grid-view">
+      <div class="lib-wrap">
+        <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
+        <div class="book-grid" id="book-grid"></div>
+      </div>
     </div>
+
+    <!-- Vista 2: Detalle de libro (ocupa toda la pantalla dentro del tab) -->
+    <div id="lib-detail-view">
+      <div class="lib-detail-header">
+        <button class="btn-back" onclick="backToLibrary()">← Biblioteca</button>
+        <div class="lib-detail-info">
+          <h2 id="detail-view-title"></h2>
+          <div class="lib-detail-meta">
+            <span id="detail-view-author"></span>
+            <span id="detail-view-count"></span>
+          </div>
+        </div>
+        <button class="btn-search-book" onclick="searchThisBook()">Buscar en este libro →</button>
+      </div>
+      <div class="lib-detail-body">
+        <input class="detail-filter" id="detail-filter" placeholder="Filtrar subrayados..." oninput="filterBookClips(this.value)">
+        <div id="clips-list"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -534,16 +570,12 @@ function filterLibrary(q) {
 
 function renderBookGrid(books) {
   const grid = document.getElementById('book-grid');
-  document.getElementById('book-detail').classList.remove('open');
-  currentBookId = null;
-
   if (!books.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Sin libros</p></div>`;
     return;
   }
-
   grid.innerHTML = books.map(b =>
-    `<div class="book-card-lib" id="bcard-${b.id}" onclick="showBook(${b.id}, ${JSON.stringify(b.title).replace(/"/g, '&quot;')}, ${JSON.stringify(b.author).replace(/"/g, '&quot;')}, ${b.clip_count})">
+    `<div class="book-card-lib" onclick="showBook(${b.id})">
       <div class="book-title-lib">${esc(b.title)}</div>
       <div class="book-author-lib">${esc(b.author)}</div>
       <div class="book-count-lib">${b.clip_count} subrayados</div>
@@ -551,42 +583,65 @@ function renderBookGrid(books) {
   ).join('');
 }
 
-async function showBook(bookId, title, author, count) {
-  document.querySelectorAll('.book-card-lib.selected').forEach(el => el.classList.remove('selected'));
-  const card = document.getElementById('bcard-' + bookId);
-  if (card) card.classList.add('selected');
+async function showBook(bookId) {
+  const book = allBooks.find(b => b.id === bookId);
+  if (!book) return;
 
-  const detail = document.getElementById('book-detail');
-  detail.classList.add('open');
-  detail.innerHTML = `<div class="lib-loading">Cargando subrayados...</div>`;
-  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Mostrar la vista de detalle
+  document.getElementById('lib-grid-view').style.display = 'none';
+  document.getElementById('lib-detail-view').style.display = 'block';
+  document.getElementById('detail-view-title').textContent  = book.title;
+  document.getElementById('detail-view-author').textContent = book.author || 'Autor desconocido';
+  document.getElementById('detail-view-count').textContent  = `${book.clip_count} subrayados`;
+  document.getElementById('detail-filter').value = '';
+  document.getElementById('clips-list').innerHTML = '<div class="lib-loading">Cargando subrayados...</div>';
+  window.scrollTo(0, 0);
 
   currentBookId = bookId;
   bookClipsPage = 1;
   bookClips = await fetch(`/api/books/${bookId}/clippings`).then(r => r.json());
-  renderBookDetail(detail, title, author, '');
+  renderClipsList('');
+  document.getElementById('detail-filter').focus();
 }
 
-function renderBookDetail(el, title, author, filter) {
-  const clips = filter
+function backToLibrary() {
+  document.getElementById('lib-detail-view').style.display = 'none';
+  document.getElementById('lib-grid-view').style.display   = 'block';
+  currentBookId = null;
+  bookClips     = [];
+  window.scrollTo(0, 0);
+}
+
+function filterBookClips(q) {
+  bookClipsPage = 1;
+  renderClipsList(q);
+}
+
+function renderClipsList(filter) {
+  const clips   = filter
     ? bookClips.filter(c => c.text.toLowerCase().includes(filter.toLowerCase()))
     : bookClips;
   const shown     = clips.slice(0, bookClipsPage * CLIPS_PER_PAGE);
   const remaining = clips.length - shown.length;
 
-  el.innerHTML =
-    `<div class="detail-header">
-      <span class="detail-title">${esc(title)}</span>
-      <span class="detail-author">${esc(author)}</span>
-      <span class="detail-count">${clips.length} subrayados</span>
-    </div>
-    <input class="detail-search" placeholder="Filtrar en este libro..."
-      value="${esc(filter)}"
-      oninput="bookClipsPage=1; renderBookDetail(document.getElementById('book-detail'), '${esc(title)}', '${esc(author)}', this.value)">` +
+  document.getElementById('detail-view-count').textContent =
+    filter ? `${clips.length} de ${bookClips.length} subrayados` : `${bookClips.length} subrayados`;
+
+  document.getElementById('clips-list').innerHTML =
     shown.map(c => `<div class="clip-item">${hlFilter(c.text, filter)}</div>`).join('') +
     (remaining > 0
-      ? `<div class="clips-more" onclick="bookClipsPage++; renderBookDetail(document.getElementById('book-detail'), '${esc(title)}', '${esc(author)}', '${esc(filter)}')">Ver más (${remaining} restantes)</div>`
+      ? `<div class="clips-more" onclick="bookClipsPage++; renderClipsList('${filter.replace(/'/g, "\\'")}')">Ver más (${remaining} restantes)</div>`
       : '');
+}
+
+function searchThisBook() {
+  const book = allBooks.find(b => b.id === currentBookId);
+  if (!book) return;
+  switchTab('search');
+  const sel = document.getElementById('book-filter');
+  sel.value = String(currentBookId);
+  applyBookFilter();
+  document.getElementById('search-input').focus();
 }
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
