@@ -127,10 +127,25 @@
   .tab-btn:hover { color: var(--ink); }
   .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
 
+  /* Re-upload button */
+  .btn-update { padding: 0.35rem 0.8rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: var(--ink-3); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-update:hover { border-color: var(--ink-3); color: var(--ink); }
+  #update-input { display: none; }
+
   /* Library — grid view */
   #screen-library { display: none; }
   #lib-grid-view  { display: block; }
   #lib-detail-view { display: none; }
+
+  /* Category sections */
+  .cat-section { margin-bottom: 1.6rem; }
+  .cat-header { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0; cursor: pointer; user-select: none; border-bottom: 1px solid var(--line); }
+  .cat-icon  { font-size: 1.1rem; }
+  .cat-name  { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 600; flex: 1; }
+  .cat-count { font-size: 0.7rem; color: var(--ink-3); }
+  .cat-arrow { font-size: 0.7rem; color: var(--ink-3); transition: transform 0.2s; display: inline-block; }
+  .cat-arrow.open { transform: rotate(90deg); }
+  .cat-books { margin-top: 0.7rem; }
   .lib-wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
   .lib-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
   .lib-search:focus { border-color: var(--accent); }
@@ -224,6 +239,8 @@
         <button class="btn-search" id="btn-search" onclick="doSearch()">Buscar</button>
       </div>
       <div id="stats-bar"></div>
+      <button class="btn-update" onclick="document.getElementById('update-input').click()" title="Actualizar con un nuevo My_Clippings.txt">⟳ Actualizar</button>
+      <input type="file" id="update-input" accept=".txt">
     </header>
 
     <div class="chips-row">
@@ -267,11 +284,11 @@
 
   <div id="screen-library">
 
-    <!-- Vista 1: Grid de libros -->
+    <!-- Vista 1: Grid de libros por categoría -->
     <div id="lib-grid-view">
       <div class="lib-wrap">
         <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
-        <div class="book-grid" id="book-grid"></div>
+        <div id="lib-categories"></div>
       </div>
     </div>
 
@@ -366,7 +383,7 @@ async function goToApp() {
     `${stats.clips.toLocaleString()} clips · ${stats.books} libros · SQLite ⚡`;
   show('screen-app');
   document.getElementById('tab-bar').style.display = 'block';
-  renderLibrary(books);
+  await renderLibrary();
   document.getElementById('search-input').focus();
 }
 
@@ -379,6 +396,7 @@ dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag'))
 dropZone.addEventListener('drop',      e  => { e.preventDefault(); dropZone.classList.remove('drag'); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
 dropZone.addEventListener('click',     e  => { if (e.target.tagName !== 'BUTTON') fileInput.click(); });
 fileInput.addEventListener('change',   e  => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+document.getElementById('update-input').addEventListener('change', e => { if (e.target.files[0]) { e.target.value = ''; loadFile(e.target.files[0]); } });
 
 async function loadFile(file) {
   show('screen-progress');
@@ -545,6 +563,8 @@ function updateHybridLabel() {
 document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
 // ── Library ────────────────────────────────────────────────────────────────
+let libraryData = []; // [{category, icon, color, bg, books:[]}]
+
 function populateBookFilter(books) {
   const sel = document.getElementById('book-filter');
   sel.innerHTML = '<option value="">Todos</option>';
@@ -556,35 +576,64 @@ function populateBookFilter(books) {
   });
 }
 
-function renderLibrary(books) {
-  renderBookGrid(books);
+async function renderLibrary() {
+  libraryData = await fetch('/api/library').then(r => r.json());
+  renderCategories(libraryData);
 }
 
 function filterLibrary(q) {
   const lower = q.toLowerCase();
-  const filtered = lower
-    ? allBooks.filter(b => b.title.toLowerCase().includes(lower) || b.author.toLowerCase().includes(lower))
-    : allBooks;
-  renderBookGrid(filtered);
+  if (!lower) { renderCategories(libraryData); return; }
+  const filtered = libraryData.map(cat => ({
+    ...cat,
+    books: cat.books.filter(b =>
+      b.title.toLowerCase().includes(lower) ||
+      b.author.toLowerCase().includes(lower)
+    )
+  })).filter(cat => cat.books.length > 0);
+  renderCategories(filtered, true);
 }
 
-function renderBookGrid(books) {
-  const grid = document.getElementById('book-grid');
-  if (!books.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Sin libros</p></div>`;
+function renderCategories(data, allOpen = false) {
+  const wrap = document.getElementById('lib-categories');
+  if (!data.length) {
+    wrap.innerHTML = `<div class="empty-state"><p>Sin libros</p></div>`;
     return;
   }
-  grid.innerHTML = books.map(b =>
-    `<div class="book-card-lib" onclick="showBook(${b.id})">
-      <div class="book-title-lib">${esc(b.title)}</div>
-      <div class="book-author-lib">${esc(b.author)}</div>
-      <div class="book-count-lib">${b.clip_count} subrayados</div>
-    </div>`
-  ).join('');
+  wrap.innerHTML = data.map((cat, ci) => {
+    const totalClips = cat.books.reduce((s, b) => s + b.clip_count, 0);
+    return `<div class="cat-section">
+      <div class="cat-header" onclick="toggleCat(${ci})">
+        <span class="cat-icon">${cat.icon}</span>
+        <span class="cat-name" style="color:${cat.color}">${esc(cat.category)}</span>
+        <span class="cat-count">${cat.books.length} libros · ${totalClips.toLocaleString()} subrayados</span>
+        <span class="cat-arrow open" id="cat-arrow-${ci}">▶</span>
+      </div>
+      <div class="cat-books" id="cat-books-${ci}">
+        <div class="book-grid">
+          ${cat.books.map(b => `
+            <div class="book-card-lib" onclick="showBook(${b.id})" style="border-left-color:${cat.color}">
+              <div class="book-title-lib">${esc(b.title)}</div>
+              <div class="book-author-lib">${esc(b.author)}</div>
+              <div class="book-count-lib">${b.clip_count} subrayados</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCat(ci) {
+  const books = document.getElementById(`cat-books-${ci}`);
+  const arrow = document.getElementById(`cat-arrow-${ci}`);
+  const hidden = books.style.display === 'none';
+  books.style.display = hidden ? '' : 'none';
+  arrow.classList.toggle('open', hidden);
 }
 
 async function showBook(bookId) {
-  const book = allBooks.find(b => b.id === bookId);
+  const book = allBooks.find(b => b.id === bookId) ||
+    libraryData.flatMap(c => c.books).find(b => b.id === bookId);
   if (!book) return;
 
   // Mostrar la vista de detalle

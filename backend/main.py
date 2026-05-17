@@ -10,7 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from db import clear_and_insert, get_book_clippings, get_books, get_stats, init_db, load_corpus
+from categorizer import CAT_META, CAT_ORDER, assign_categories
+from db import (clear_and_insert, get_book_clippings, get_books,
+                get_books_by_category, get_stats, init_db, load_corpus)
 from parser import filter_clippings, parse_clippings
 
 FRONTEND = Path(__file__).parent.parent / "frontend"
@@ -23,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Lazy model ────────────────────────────────────────────────────────────────
+# ── Model ─────────────────────────────────────────────────────────────────────
 
 _model = None
 
@@ -40,7 +42,7 @@ def get_model():
     return _load_model()
 
 
-# ── In-memory corpus cache ────────────────────────────────────────────────────
+# ── In-memory corpus ──────────────────────────────────────────────────────────
 
 _corpus: list[dict] = []
 _matrix: np.ndarray | None = None
@@ -57,7 +59,6 @@ def reload_cache() -> None:
 async def startup() -> None:
     init_db()
     reload_cache()
-    # Pre-warm model in background so first search is instant
     asyncio.get_event_loop().run_in_executor(None, _load_model)
 
 
@@ -78,6 +79,43 @@ async def api_stats():
 @app.get("/api/books")
 async def api_books():
     return get_books()
+
+
+@app.get("/api/library")
+async def api_library():
+    """Returns books grouped by category in display order."""
+    books = get_books_by_category()
+
+    # Group by category preserving CAT_ORDER
+    groups: dict[str, list] = {cat: [] for cat in CAT_ORDER}
+    groups["Sin categoría"] = []
+
+    for b in books:
+        cat = b["category"] if b["category"] in groups else "Sin categoría"
+        groups[cat].append(b)
+
+    result = []
+    for cat in CAT_ORDER:
+        if groups[cat]:
+            meta = CAT_META.get(cat, {"icon": "📖", "color": "#555", "bg": "#f0f0f0"})
+            result.append({
+                "category": cat,
+                "icon": meta["icon"],
+                "color": meta["color"],
+                "bg": meta["bg"],
+                "books": groups[cat],
+            })
+
+    if groups["Sin categoría"]:
+        result.append({
+            "category": "Sin categoría",
+            "icon": "📖",
+            "color": "#7a7268",
+            "bg": "#f0ede8",
+            "books": groups["Sin categoría"],
+        })
+
+    return result
 
 
 @app.get("/api/books/{book_id}/clippings")
@@ -104,10 +142,10 @@ async def api_upload(file: UploadFile = File(...)):
         yield evt({"pct": 22, "msg": f"{total} seleccionados — cargando modelo..."})
         model = await asyncio.get_event_loop().run_in_executor(None, get_model)
 
+        # Embed clips
         texts = [c["text"] for c in filtered]
         BATCH = 64
         vecs: list[np.ndarray] = []
-
         for i in range(0, total, BATCH):
             batch = texts[i: i + BATCH]
             v = await asyncio.get_event_loop().run_in_executor(
@@ -115,14 +153,26 @@ async def api_upload(file: UploadFile = File(...)):
                 lambda b=batch: model.encode(b, normalize_embeddings=True, show_progress_bar=False),
             )
             vecs.append(v)
-            pct = 30 + int((i + len(batch)) / total * 60)
+            pct = 28 + int((i + len(batch)) / total * 55)
             yield evt({"pct": pct, "msg": f"Embeddings: {min(i + BATCH, total)}/{total}"})
 
         matrix = np.vstack(vecs)
 
+        # Categorize books
+        yield evt({"pct": 85, "msg": "Categorizando libros..."})
+        unique_books = {}
+        for clip in filtered:
+            if clip["bookRaw"] not in unique_books:
+                unique_books[clip["bookRaw"]] = clip
+        books_list = list(unique_books.values())
+        categories = await asyncio.get_event_loop().run_in_executor(
+            None, lambda: assign_categories(books_list, model)
+        )
+        book_categories = {b["bookRaw"]: cat for b, cat in zip(books_list, categories)}
+
         yield evt({"pct": 92, "msg": "Guardando en SQLite..."})
         await asyncio.get_event_loop().run_in_executor(
-            None, lambda: clear_and_insert(filtered, matrix)
+            None, lambda: clear_and_insert(filtered, matrix, book_categories)
         )
         reload_cache()
 
@@ -150,13 +200,12 @@ async def api_search(req: SearchReq):
         lambda: model.encode([req.query], normalize_embeddings=True)[0],
     )
 
-    sem = _matrix @ qvec  # dot product == cosine sim (all vectors are L2-normalized)
-
+    sem = _matrix @ qvec
     terms = [t for t in req.query.lower().split() if len(t) >= 2]
     kw = np.array([_kw_score(c["text"], terms) for c in _corpus], dtype=np.float32)
 
     sem_n = sem / (sem.max() or 1.0)
-    kw_n = kw / (kw.max() or 1.0)
+    kw_n  = kw  / (kw.max()  or 1.0)
     hybrid = req.alpha * sem_n + (1 - req.alpha) * kw_n
 
     mask = hybrid > 0.05
@@ -170,8 +219,8 @@ async def api_search(req: SearchReq):
         {
             **_corpus[i],
             "semScore": round(float(sem_n[i]), 4),
-            "kwScore": round(float(kw_n[i]), 4),
-            "hybrid": round(float(hybrid[i]), 4),
+            "kwScore":  round(float(kw_n[i]),  4),
+            "hybrid":   round(float(hybrid[i]), 4),
         }
         for i in idxs
     ]

@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 
 DB_PATH = Path(__file__).parent.parent / "data" / "kindle.db"
-DIM = 384
 
 
 def get_conn() -> sqlite3.Connection:
@@ -18,10 +17,11 @@ def init_db() -> None:
     with get_conn() as conn:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS books (
-                id     INTEGER PRIMARY KEY AUTOINCREMENT,
-                raw    TEXT    UNIQUE NOT NULL,
-                title  TEXT    NOT NULL,
-                author TEXT    NOT NULL DEFAULT ''
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                raw      TEXT    UNIQUE NOT NULL,
+                title    TEXT    NOT NULL,
+                author   TEXT    NOT NULL DEFAULT '',
+                category TEXT    NOT NULL DEFAULT 'Sin categoría'
             );
             CREATE TABLE IF NOT EXISTS clippings (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,9 +32,16 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_clip_book ON clippings(book_id);
         """)
+        # Migration: add category column to existing DBs that don't have it
+        try:
+            conn.execute("ALTER TABLE books ADD COLUMN category TEXT NOT NULL DEFAULT 'Sin categoría'")
+            conn.commit()
+        except Exception:
+            pass
 
 
-def clear_and_insert(parsed: list[dict], embeddings: np.ndarray) -> None:
+def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
+                     book_categories: dict[str, str]) -> None:
     with get_conn() as conn:
         conn.execute("DELETE FROM clippings")
         conn.execute("DELETE FROM books")
@@ -43,9 +50,10 @@ def clear_and_insert(parsed: list[dict], embeddings: np.ndarray) -> None:
         for clip, emb in zip(parsed, embeddings):
             raw = clip["bookRaw"]
             if raw not in book_id_map:
+                cat = book_categories.get(raw, "Sin categoría")
                 cur = conn.execute(
-                    "INSERT OR IGNORE INTO books (raw, title, author) VALUES (?, ?, ?)",
-                    (raw, clip["bookTitle"], clip["bookAuthor"]),
+                    "INSERT OR IGNORE INTO books (raw, title, author, category) VALUES (?, ?, ?, ?)",
+                    (raw, clip["bookTitle"], clip["bookAuthor"], cat),
                 )
                 if cur.lastrowid:
                     book_id_map[raw] = cur.lastrowid
@@ -56,12 +64,8 @@ def clear_and_insert(parsed: list[dict], embeddings: np.ndarray) -> None:
 
             conn.execute(
                 "INSERT INTO clippings (book_id, text, year, embedding) VALUES (?, ?, ?, ?)",
-                (
-                    book_id_map[raw],
-                    clip["text"],
-                    clip["year"],
-                    emb.astype(np.float32).tobytes(),
-                ),
+                (book_id_map[raw], clip["text"], clip["year"],
+                 emb.astype(np.float32).tobytes()),
             )
         conn.commit()
 
@@ -96,9 +100,19 @@ def load_corpus() -> tuple[list[dict], np.ndarray | None]:
 def get_books() -> list[dict]:
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT b.id, b.raw, b.title, b.author, COUNT(c.id) as clip_count "
+            "SELECT b.id, b.raw, b.title, b.author, b.category, COUNT(c.id) as clip_count "
             "FROM books b LEFT JOIN clippings c ON c.book_id = b.id "
             "GROUP BY b.id ORDER BY b.title"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_books_by_category() -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT b.id, b.raw, b.title, b.author, b.category, COUNT(c.id) as clip_count "
+            "FROM books b LEFT JOIN clippings c ON c.book_id = b.id "
+            "GROUP BY b.id ORDER BY b.category, b.title"
         ).fetchall()
     return [dict(r) for r in rows]
 
