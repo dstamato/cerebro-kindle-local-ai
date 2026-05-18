@@ -143,6 +143,14 @@ def save_cover_url(book_id: int, url: str) -> None:
         conn.commit()
 
 
+def delete_book(book_id: int) -> bool:
+    with get_conn() as conn:
+        cur = conn.execute("DELETE FROM clippings WHERE book_id = ?", (book_id,))
+        conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+        conn.commit()
+        return cur.rowcount > 0
+
+
 def get_stats() -> dict:
     with get_conn() as conn:
         clips = conn.execute("SELECT COUNT(*) FROM clippings").fetchone()[0]

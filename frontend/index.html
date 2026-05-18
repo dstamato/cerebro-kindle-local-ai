@@ -159,6 +159,19 @@
   .book-author-lib { font-size: 0.78rem; color: var(--ink-3); font-style: italic; }
   .book-count-lib { font-size: 0.72rem; color: var(--ink-3); margin-top: 5px; }
 
+  /* Library — sticky category nav */
+  .lib-cat-nav { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); padding: 0.55rem 2rem; display: flex; gap: 0.4rem; overflow-x: auto; scrollbar-width: none; }
+  .lib-cat-nav::-webkit-scrollbar { display: none; }
+  .cat-pill { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; border: 1px solid var(--paper-3); border-radius: 20px; font-size: 0.75rem; color: var(--ink-2); cursor: pointer; background: white; white-space: nowrap; transition: all 0.15s; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+  .cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-pill.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* delete button on book cards */
+  .book-card-lib { position: relative; }
+  .btn-delete-book { display: none; position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.12); color: var(--ink-3); font-size: 0.65rem; cursor: pointer; align-items: center; justify-content: center; line-height: 1; padding: 0; transition: all 0.15s; }
+  .book-card-lib:hover .btn-delete-book { display: flex; }
+  .btn-delete-book:hover { background: #e53935; color: white; }
+
   /* Library — detail view (full-page dentro del tab) */
   .lib-detail-header {
     position: sticky; top: 0; z-index: 40;
@@ -291,6 +304,7 @@
 
     <!-- Vista 1: Grid de libros por categoría -->
     <div id="lib-grid-view">
+      <nav class="lib-cat-nav" id="lib-cat-nav"></nav>
       <div class="lib-wrap">
         <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
         <div id="lib-categories"></div>
@@ -604,11 +618,19 @@ function renderCategories(data, allOpen = false) {
   const wrap = document.getElementById('lib-categories');
   if (!data.length) {
     wrap.innerHTML = `<div class="empty-state"><p>Sin libros</p></div>`;
+    document.getElementById('lib-cat-nav').innerHTML = '';
     return;
   }
+
+  // Category nav pills
+  const nav = document.getElementById('lib-cat-nav');
+  nav.innerHTML = data.map((cat, ci) =>
+    `<button class="cat-pill" id="pill-${ci}" onclick="scrollToCat(${ci})">${cat.icon} ${esc(cat.category)}</button>`
+  ).join('');
+
   wrap.innerHTML = data.map((cat, ci) => {
     const totalClips = cat.books.reduce((s, b) => s + b.clip_count, 0);
-    return `<div class="cat-section">
+    return `<div class="cat-section" id="cat-section-${ci}">
       <div class="cat-header" onclick="toggleCat(${ci})">
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name" style="color:${cat.color}">${esc(cat.category)}</span>
@@ -619,6 +641,7 @@ function renderCategories(data, allOpen = false) {
         <div class="book-grid">
           ${cat.books.map(b => `
             <div class="book-card-lib" onclick="showBook(${b.id})" style="border-left-color:${cat.color}" data-book-id="${b.id}">
+              <button class="btn-delete-book" onclick="deleteBook(${b.id},event)" title="Eliminar libro">×</button>
               <div class="book-cover-thumb" id="cover-${b.id}"></div>
               <div class="book-card-info">
                 <div class="book-title-lib">${esc(b.title)}</div>
@@ -631,8 +654,48 @@ function renderCategories(data, allOpen = false) {
     </div>`;
   }).join('');
 
-  // Start lazy-loading covers for visible cards
   requestAnimationFrame(observeCovers);
+  requestAnimationFrame(updateActivePill);
+}
+
+function scrollToCat(ci) {
+  const section = document.getElementById(`cat-section-${ci}`);
+  if (!section) return;
+  const navH = document.getElementById('lib-cat-nav').offsetHeight;
+  const top = section.getBoundingClientRect().top + window.scrollY - navH - 8;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+function updateActivePill() {
+  const nav = document.getElementById('lib-cat-nav');
+  if (!nav) return;
+  const navH = nav.offsetHeight;
+  let active = 0;
+  document.querySelectorAll('[id^="cat-section-"]').forEach((sec, i) => {
+    if (sec.getBoundingClientRect().top <= navH + 20) active = i;
+  });
+  document.querySelectorAll('.cat-pill').forEach((p, i) => p.classList.toggle('active', i === active));
+}
+
+window.addEventListener('scroll', updateActivePill, { passive: true });
+
+async function deleteBook(bookId, event) {
+  event.stopPropagation();
+  const card = event.target.closest('.book-card-lib');
+  const title = card.querySelector('.book-title-lib')?.textContent || 'este libro';
+  if (!confirm(`¿Eliminar "${title}" y todos sus subrayados?`)) return;
+  try {
+    await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
+    card.remove();
+    libraryData = await fetch('/api/library').then(r => r.json());
+    // update allBooks and book filter dropdown
+    allBooks = libraryData.flatMap(c => c.books);
+    populateBookFilter(allBooks);
+    const stats = await fetch('/api/stats').then(r => r.json());
+    document.getElementById('stats-bar').textContent = `${stats.clips.toLocaleString()} subrayados · ${stats.books} libros`;
+  } catch (e) {
+    alert('Error al eliminar el libro');
+  }
 }
 
 function toggleCat(ci) {

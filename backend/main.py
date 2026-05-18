@@ -185,6 +185,16 @@ async def _fetch_cover_google(title: str, author: str) -> str | None:
         return None
 
 
+@app.delete("/api/books/{book_id}")
+async def api_delete_book(book_id: int):
+    from db import delete_book
+    deleted = delete_book(book_id)
+    if not deleted:
+        raise HTTPException(404, "Libro no encontrado")
+    reload_cache()
+    return {"ok": True}
+
+
 @app.get("/api/books/{book_id}/clippings")
 async def api_book_clippings(book_id: int):
     return get_book_clippings(book_id)
