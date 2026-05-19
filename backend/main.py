@@ -236,6 +236,19 @@ async def api_delete_book(book_id: int):
     return {"ok": True}
 
 
+@app.get("/api/ignored")
+async def api_ignored():
+    from db import get_ignored_books
+    return sorted(get_ignored_books())
+
+
+@app.delete("/api/ignored")
+async def api_unignore(raw: str):
+    from db import unignore_book
+    unignore_book(raw)
+    return {"ok": True}
+
+
 @app.post("/api/books/{book_id}/cover/retry")
 async def api_cover_retry(book_id: int):
     """Force-refetch cover even if previously cached as not found."""

@@ -30,6 +30,9 @@ def init_db() -> None:
                 year      INTEGER,
                 embedding BLOB    NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS ignored_books (
+                raw  TEXT PRIMARY KEY
+            );
             CREATE INDEX IF NOT EXISTS idx_clip_book ON clippings(book_id);
         """)
         # Migrations for existing DBs
@@ -44,8 +47,27 @@ def init_db() -> None:
                 pass
 
 
+def get_ignored_books() -> set[str]:
+    with get_conn() as conn:
+        rows = conn.execute("SELECT raw FROM ignored_books").fetchall()
+    return {r["raw"] for r in rows}
+
+
+def ignore_book(raw: str) -> None:
+    with get_conn() as conn:
+        conn.execute("INSERT OR IGNORE INTO ignored_books (raw) VALUES (?)", (raw,))
+        conn.commit()
+
+
+def unignore_book(raw: str) -> None:
+    with get_conn() as conn:
+        conn.execute("DELETE FROM ignored_books WHERE raw = ?", (raw,))
+        conn.commit()
+
+
 def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
                      book_categories: dict[str, str]) -> None:
+    ignored = get_ignored_books()
     with get_conn() as conn:
         conn.execute("DELETE FROM clippings")
         conn.execute("DELETE FROM books")
@@ -53,6 +75,8 @@ def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
         book_id_map: dict[str, int] = {}
         for clip, emb in zip(parsed, embeddings):
             raw = clip["bookRaw"]
+            if raw in ignored:
+                continue                    # skip permanently deleted books
             if raw not in book_id_map:
                 cat = book_categories.get(raw, "Sin categoría")
                 cur = conn.execute(
@@ -145,10 +169,15 @@ def save_cover_url(book_id: int, url: str) -> None:
 
 def delete_book(book_id: int) -> bool:
     with get_conn() as conn:
-        cur = conn.execute("DELETE FROM clippings WHERE book_id = ?", (book_id,))
+        row = conn.execute("SELECT raw FROM books WHERE id = ?", (book_id,)).fetchone()
+        if not row:
+            return False
+        raw = row["raw"]
+        conn.execute("DELETE FROM clippings WHERE book_id = ?", (book_id,))
         conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
         conn.commit()
-        return cur.rowcount > 0
+    ignore_book(raw)   # remember it so it's skipped on next upload
+    return True
 
 
 def get_stats() -> dict:
