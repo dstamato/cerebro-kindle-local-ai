@@ -625,7 +625,6 @@ function renderCategories(data, allOpen = false) {
   const wrap = document.getElementById('lib-categories');
   if (!data.length) {
     wrap.innerHTML = `<div class="empty-state"><p>Sin libros</p></div>`;
-    document.getElementById('lib-cat-nav').innerHTML = '';
     return;
   }
 
@@ -669,10 +668,9 @@ function scrollToCat(ci) {
   if (ci === '') return;
   const section = document.getElementById(`cat-section-${ci}`);
   if (!section) return;
-  const navH = document.querySelector('.lib-cat-nav').offsetHeight;
-  const top = section.getBoundingClientRect().top + window.scrollY - navH - 8;
+  const tabH = document.getElementById('tab-bar').offsetHeight;
+  const top = section.getBoundingClientRect().top + window.scrollY - tabH - 8;
   window.scrollTo({ top, behavior: 'smooth' });
-  // Reset select back to placeholder after scrolling
   setTimeout(() => { document.getElementById('lib-cat-select').value = ''; }, 600);
 }
 
