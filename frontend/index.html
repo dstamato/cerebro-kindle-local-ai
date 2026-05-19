@@ -122,7 +122,8 @@
   .pg-btn:hover, .pg-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
   /* Tabs */
-  .tab-bar { display: flex; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .tab-bar { display: flex; align-items: center; border-bottom: 1px solid var(--line); background: var(--paper); padding-right: 1rem; }
+  .tab-bar-spacer { flex: 1; }
   .tab-btn { padding: 0.75rem 1.4rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-3); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
   .tab-btn:hover { color: var(--ink); }
   .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
@@ -159,9 +160,8 @@
   .book-author-lib { font-size: 0.78rem; color: var(--ink-3); font-style: italic; }
   .book-count-lib { font-size: 0.72rem; color: var(--ink-3); margin-top: 5px; }
 
-  /* Library — sticky category dropdown */
-  .lib-cat-nav { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); padding: 0.55rem 2rem; display: flex; align-items: center; gap: 0.75rem; }
-  .lib-cat-select { border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.4rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.83rem; color: var(--ink-2); background: white; outline: none; cursor: pointer; transition: border-color 0.15s; }
+  /* Category dropdown in tab bar */
+  .lib-cat-select { border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.3rem 0.65rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink-2); background: white; outline: none; cursor: pointer; transition: border-color 0.15s; }
   .lib-cat-select:focus { border-color: var(--accent); }
 
   /* delete button on book cards */
@@ -248,6 +248,10 @@
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('search')">🔍 Búsqueda</button>
       <button class="tab-btn"        onclick="switchTab('library')">📚 Biblioteca</button>
+      <div class="tab-bar-spacer"></div>
+      <select class="lib-cat-select" id="lib-cat-select" onchange="scrollToCat(this.value)" style="display:none">
+        <option value="">Ir a categoría...</option>
+      </select>
     </div>
   </div>
 
@@ -306,11 +310,6 @@
 
     <!-- Vista 1: Grid de libros por categoría -->
     <div id="lib-grid-view">
-      <div class="lib-cat-nav">
-        <select class="lib-cat-select" id="lib-cat-select" onchange="scrollToCat(this.value)">
-          <option value="">Todas las categorías</option>
-        </select>
-      </div>
       <div class="lib-wrap">
         <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
         <div id="lib-categories"></div>
@@ -630,9 +629,9 @@ function renderCategories(data, allOpen = false) {
     return;
   }
 
-  // Category dropdown
+  // Category dropdown (in tab bar)
   const sel = document.getElementById('lib-cat-select');
-  sel.innerHTML = '<option value="">Todas las categorías</option>' +
+  sel.innerHTML = '<option value="">Ir a categoría...</option>' +
     data.map((cat, ci) =>
       `<option value="${ci}">${cat.icon} ${esc(cat.category)} (${cat.books.length})</option>`
     ).join('');
@@ -840,6 +839,7 @@ function switchTab(tab) {
   });
   document.getElementById('search-content').style.display   = tab === 'search'  ? 'block' : 'none';
   document.getElementById('screen-library').style.display   = tab === 'library' ? 'block' : 'none';
+  document.getElementById('lib-cat-select').style.display   = tab === 'library' ? 'block' : 'none';
 }
 
 // ── Covers ─────────────────────────────────────────────────────────────────
