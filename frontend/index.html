@@ -159,12 +159,10 @@
   .book-author-lib { font-size: 0.78rem; color: var(--ink-3); font-style: italic; }
   .book-count-lib { font-size: 0.72rem; color: var(--ink-3); margin-top: 5px; }
 
-  /* Library — sticky category nav */
-  .lib-cat-nav { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); padding: 0.55rem 2rem; display: flex; gap: 0.4rem; overflow-x: auto; scrollbar-width: none; }
-  .lib-cat-nav::-webkit-scrollbar { display: none; }
-  .cat-pill { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; border: 1px solid var(--paper-3); border-radius: 20px; font-size: 0.75rem; color: var(--ink-2); cursor: pointer; background: white; white-space: nowrap; transition: all 0.15s; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
-  .cat-pill:hover { border-color: var(--accent); color: var(--accent); }
-  .cat-pill.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  /* Library — sticky category dropdown */
+  .lib-cat-nav { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); padding: 0.55rem 2rem; display: flex; align-items: center; gap: 0.75rem; }
+  .lib-cat-select { border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.4rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.83rem; color: var(--ink-2); background: white; outline: none; cursor: pointer; transition: border-color 0.15s; }
+  .lib-cat-select:focus { border-color: var(--accent); }
 
   /* delete button on book cards */
   .book-card-lib { position: relative; }
@@ -308,7 +306,11 @@
 
     <!-- Vista 1: Grid de libros por categoría -->
     <div id="lib-grid-view">
-      <nav class="lib-cat-nav" id="lib-cat-nav"></nav>
+      <div class="lib-cat-nav">
+        <select class="lib-cat-select" id="lib-cat-select" onchange="scrollToCat(this.value)">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
       <div class="lib-wrap">
         <input class="lib-search" id="lib-search" placeholder="Filtrar libros por título o autor..." oninput="filterLibrary(this.value)">
         <div id="lib-categories"></div>
@@ -608,6 +610,7 @@ async function renderLibrary() {
 
 function filterLibrary(q) {
   const lower = q.toLowerCase();
+  document.getElementById('lib-cat-select').value = '';
   if (!lower) { renderCategories(libraryData); return; }
   const filtered = libraryData.map(cat => ({
     ...cat,
@@ -627,11 +630,12 @@ function renderCategories(data, allOpen = false) {
     return;
   }
 
-  // Category nav pills
-  const nav = document.getElementById('lib-cat-nav');
-  nav.innerHTML = data.map((cat, ci) =>
-    `<button class="cat-pill" id="pill-${ci}" onclick="scrollToCat(${ci})">${cat.icon} ${esc(cat.category)}</button>`
-  ).join('');
+  // Category dropdown
+  const sel = document.getElementById('lib-cat-select');
+  sel.innerHTML = '<option value="">Todas las categorías</option>' +
+    data.map((cat, ci) =>
+      `<option value="${ci}">${cat.icon} ${esc(cat.category)} (${cat.books.length})</option>`
+    ).join('');
 
   wrap.innerHTML = data.map((cat, ci) => {
     const totalClips = cat.books.reduce((s, b) => s + b.clip_count, 0);
@@ -660,29 +664,18 @@ function renderCategories(data, allOpen = false) {
   }).join('');
 
   requestAnimationFrame(observeCovers);
-  requestAnimationFrame(updateActivePill);
 }
 
 function scrollToCat(ci) {
+  if (ci === '') return;
   const section = document.getElementById(`cat-section-${ci}`);
   if (!section) return;
-  const navH = document.getElementById('lib-cat-nav').offsetHeight;
+  const navH = document.querySelector('.lib-cat-nav').offsetHeight;
   const top = section.getBoundingClientRect().top + window.scrollY - navH - 8;
   window.scrollTo({ top, behavior: 'smooth' });
+  // Reset select back to placeholder after scrolling
+  setTimeout(() => { document.getElementById('lib-cat-select').value = ''; }, 600);
 }
-
-function updateActivePill() {
-  const nav = document.getElementById('lib-cat-nav');
-  if (!nav) return;
-  const navH = nav.offsetHeight;
-  let active = 0;
-  document.querySelectorAll('[id^="cat-section-"]').forEach((sec, i) => {
-    if (sec.getBoundingClientRect().top <= navH + 20) active = i;
-  });
-  document.querySelectorAll('.cat-pill').forEach((p, i) => p.classList.toggle('active', i === active));
-}
-
-window.addEventListener('scroll', updateActivePill, { passive: true });
 
 async function deleteBook(bookId, event) {
   event.stopPropagation();
