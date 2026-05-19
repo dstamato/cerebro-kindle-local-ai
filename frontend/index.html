@@ -188,6 +188,10 @@
   .lib-detail-meta span + span::before { content: ' · '; }
   .btn-search-book { padding: 0.4rem 0.9rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--accent); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn-search-book:hover { background: #e8f0fb; border-color: var(--accent); }
+  .btn-cover-retry { padding: 0.35rem 0.6rem; background: transparent; border: 1px solid var(--paper-3); border-radius: 3px; font-size: 0.82rem; cursor: pointer; color: var(--ink-3); transition: all 0.15s; }
+  .btn-cover-retry:hover { border-color: var(--ink-3); color: var(--ink); }
+  #detail-cover { cursor: pointer; }
+  #detail-cover:not(.visible):hover::after { content: '+'; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.2rem; color: var(--ink-3); }
 
   .lib-detail-body { max-width: 800px; margin: 0 auto; padding: 1.2rem 2rem 4rem; }
   .detail-filter { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.5rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--ink); background: white; outline: none; margin-bottom: 1.2rem; }
@@ -315,7 +319,7 @@
     <div id="lib-detail-view">
       <div class="lib-detail-header">
         <button class="btn-back" onclick="backToLibrary()">← Biblioteca</button>
-        <div id="detail-cover"></div>
+        <div id="detail-cover" onclick="promptCoverUrl()" title="Click para cambiar la tapa"></div>
         <div class="lib-detail-info">
           <h2 id="detail-view-title"></h2>
           <div class="lib-detail-meta">
@@ -323,6 +327,7 @@
             <span id="detail-view-count"></span>
           </div>
         </div>
+        <button class="btn-cover-retry" id="btn-cover-retry" onclick="retryCover()" title="Buscar tapa nuevamente" style="display:none">🔄</button>
         <button class="btn-search-book" onclick="searchThisBook()">Buscar en este libro →</button>
       </div>
       <div class="lib-detail-body">
@@ -722,14 +727,16 @@ async function showBook(bookId) {
 
   // Tapa en el header del detalle
   const coverEl = document.getElementById('detail-cover');
+  const retryBtn = document.getElementById('btn-cover-retry');
   coverEl.classList.remove('visible');
   coverEl.style.backgroundImage = '';
+  retryBtn.style.display = 'none';
+  coverEl.style.display = 'block';
   fetchCover(bookId).then(url => {
     if (url) {
-      coverEl.style.backgroundImage = `url(${url})`;
-      coverEl.style.backgroundColor = 'transparent';
-      coverEl.style.borderColor = 'transparent';
-      coverEl.classList.add('visible');
+      applyDetailCover(url);
+    } else {
+      retryBtn.style.display = 'flex';
     }
   });
 
@@ -740,6 +747,57 @@ async function showBook(bookId) {
   bookClips = await fetch(`/api/books/${bookId}/clippings`).then(r => r.json());
   renderClipsList('');
   document.getElementById('detail-filter').focus();
+}
+
+function applyDetailCover(url) {
+  const coverEl = document.getElementById('detail-cover');
+  coverEl.style.backgroundImage = `url(${url})`;
+  coverEl.style.backgroundColor = 'transparent';
+  coverEl.style.borderColor = 'transparent';
+  coverEl.classList.add('visible');
+  document.getElementById('btn-cover-retry').style.display = 'none';
+}
+
+async function retryCover() {
+  if (!currentBookId) return;
+  const btn = document.getElementById('btn-cover-retry');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  try {
+    delete _coverCache[currentBookId];
+    const { url } = await fetch(`/api/books/${currentBookId}/cover/retry`, { method: 'POST' }).then(r => r.json());
+    _coverCache[currentBookId] = url;
+    if (url) {
+      applyDetailCover(url);
+      // also update the grid card thumbnail
+      const thumb = document.getElementById(`cover-${currentBookId}`);
+      if (thumb) { thumb.style.backgroundImage = `url(${url})`; thumb.classList.add('loaded'); }
+    } else {
+      btn.textContent = '🔄';
+      btn.disabled = false;
+    }
+  } catch {
+    btn.textContent = '🔄';
+    btn.disabled = false;
+  }
+}
+
+async function promptCoverUrl() {
+  if (!currentBookId) return;
+  const url = prompt('Pegá la URL de la tapa (imagen):');
+  if (!url || !url.startsWith('http')) return;
+  // Save to backend
+  await fetch(`/api/books/${currentBookId}/cover/retry`, { method: 'POST' });
+  // Override in DB with the custom URL (use save_cover_url via a new endpoint)
+  await fetch(`/api/books/${currentBookId}/cover`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  });
+  _coverCache[currentBookId] = url;
+  applyDetailCover(url);
+  const thumb = document.getElementById(`cover-${currentBookId}`);
+  if (thumb) { thumb.style.backgroundImage = `url(${url})`; thumb.classList.add('loaded'); }
 }
 
 function backToLibrary() {

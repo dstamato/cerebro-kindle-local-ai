@@ -137,8 +137,49 @@ async def api_cover(book_id: int):
     return {"url": url or ""}
 
 
+def _clean_author(author: str) -> str:
+    """Take only the first author and remove noise."""
+    # Split on ; or , (multiple authors)
+    first = author.split(";")[0].split(",")[0].strip()
+    # Skip generic placeholders
+    if first.upper() in ("AA. VV.", "AA.VV.", "VARIOS", "VV.AA.", "AAVV", ""):
+        return ""
+    return first
+
+
+def _short_title(title: str) -> str:
+    """Remove subtitle after — : or ( to improve search hit rate."""
+    for sep in (" — ", ": ", " ("):
+        if sep in title:
+            return title.split(sep)[0].strip()
+    return title
+
+
 async def _fetch_cover(title: str, author: str) -> str | None:
-    return await _fetch_cover_openlibrary(title, author) or await _fetch_cover_google(title, author)
+    clean_author = _clean_author(author)
+    short = _short_title(title)
+
+    # Cascade of strategies — first hit wins
+    strategies = [
+        (title, clean_author),       # full title + clean author
+        (short, clean_author),       # short title + clean author
+        (short, ""),                 # short title only
+        (title, ""),                 # full title only
+    ]
+    # Deduplicate while preserving order
+    seen, deduped = set(), []
+    for s in strategies:
+        if s not in seen:
+            seen.add(s)
+            deduped.append(s)
+
+    for t, a in deduped:
+        url = await _fetch_cover_openlibrary(t, a)
+        if url:
+            return url
+
+    # Google Books as final fallback (title-only, avoids quota issues with long queries)
+    return await _fetch_cover_google(short, clean_author)
 
 
 async def _fetch_cover_openlibrary(title: str, author: str) -> str | None:
@@ -193,6 +234,29 @@ async def api_delete_book(book_id: int):
         raise HTTPException(404, "Libro no encontrado")
     reload_cache()
     return {"ok": True}
+
+
+@app.post("/api/books/{book_id}/cover/retry")
+async def api_cover_retry(book_id: int):
+    """Force-refetch cover even if previously cached as not found."""
+    books = get_books()
+    book = next((b for b in books if b["id"] == book_id), None)
+    if not book:
+        raise HTTPException(404, "Libro no encontrado")
+    save_cover_url(book_id, None)   # clear cache so _fetch_cover runs
+    url = await _fetch_cover(book["title"], book["author"])
+    save_cover_url(book_id, url or "")
+    return {"url": url or ""}
+
+
+class CoverUrlReq(BaseModel):
+    url: str
+
+@app.put("/api/books/{book_id}/cover")
+async def api_set_cover(book_id: int, req: CoverUrlReq):
+    """Manually set a cover URL for a book."""
+    save_cover_url(book_id, req.url)
+    return {"url": req.url}
 
 
 @app.get("/api/books/{book_id}/clippings")
