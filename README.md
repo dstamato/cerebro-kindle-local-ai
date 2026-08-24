@@ -27,6 +27,9 @@ Cargás tu `My_Clippings.txt` una vez y podés:
 - **Mezclar ambos** — un slider ajusta el balance entre semántico y keyword en tiempo real
 - **Explorar por biblioteca** — todos tus libros organizados en categorías temáticas con portadas
 - **Ver subrayados por libro** — página de detalle con todos los subrayados de un libro
+- **Importar desde BOOX y otros lectores** — acepta un array JSON además de `My_Clippings.txt`
+- **Mantener varias fuentes juntas** — fusiona nuevas exportaciones sin duplicar subrayados
+- **Recorrer cada libro cronológicamente** — muestra los subrayados del más antiguo al más reciente; los que no tienen fecha quedan al final
 
 ---
 
