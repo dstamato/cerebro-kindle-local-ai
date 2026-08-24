@@ -4,40 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cerebro Kindle — Búsqueda Híbrida</title>
+<script>
+  // Aplicar tema guardado antes de pintar, para evitar flash de tema claro.
+  try { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-theme'); } catch(e) {}
+</script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap');
 
   :root {
-    --ink: #1a1814;
-    --ink-2: #3d3a34;
-    --ink-3: #7a7268;
-    --paper: #f7f4ef;
-    --paper-2: #edeae3;
-    --paper-3: #dedad2;
-    --accent: #2d5a8e;
-    --line: rgba(26,24,20,0.1);
-    --yellow-border: #d4a843;
-    --green-border: #4caf50;
+    --ink: #0a0a0a;
+    --ink-2: #333333;
+    --ink-3: #6f6f6f;
+    --paper: #ffffff;
+    --paper-2: #f5f5f5;
+    --paper-3: #e2e2e2;
+    --accent: #0a0a0a;
+    --line: rgba(0,0,0,0.08);
+    --yellow-border: #e2e2e2;
+    --green-border: #e2e2e2;
+    --card: #ffffff;
+    --accent-bg: #0a0a0a;
+    --accent-fg: #ffffff;
+    --overlay-subtle: rgba(0,0,0,0.04);
+    --shadow: rgba(0,0,0,0.13);
+    --cat-accent: #8B5E3C;
+    color-scheme: light;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  html.dark-theme {
+    --ink: #f0f0f0;
+    --ink-2: #d4d4d4;
+    --ink-3: #9c9c9c;
+    --paper: #121212;
+    --paper-2: #1a1a1a;
+    --paper-3: #303030;
+    --accent: #f0f0f0;
+    --line: rgba(255,255,255,0.09);
+    --yellow-border: #303030;
+    --green-border: #303030;
+    --card: #1b1b1b;
+    --accent-bg: #f0f0f0;
+    --accent-fg: #121212;
+    --overlay-subtle: rgba(255,255,255,0.06);
+    --shadow: rgba(0,0,0,0.5);
+    --cat-accent: #caa06c;
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; font-size: 15px; }
+  html { background: var(--paper); }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; font-weight: 400; min-height: 100vh; font-size: 15px; }
 
   /* ── UPLOAD ── */
   #screen-upload { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; gap: 2rem; }
-  .brand h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; text-align: center; }
-  .brand p { font-size: 0.83rem; color: var(--ink-3); text-align: center; margin-top: 0.3rem; font-style: italic; }
-  .upload-box { background: white; border: 1.5px dashed var(--paper-3); border-radius: 6px; padding: 3rem 4rem; max-width: 520px; width: 100%; text-align: center; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
-  .upload-box:hover, .upload-box.drag { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(45,90,142,0.06); }
-  .upload-box h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 400; color: var(--ink-2); margin-bottom: 0.5rem; }
+  .brand h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 500; letter-spacing: -0.03em; text-align: center; }
+  .brand p { font-size: 0.83rem; color: var(--ink-3); text-align: center; margin-top: 0.3rem; }
+  .upload-box { background: var(--card); border: 1px solid var(--paper-3); border-radius: 4px; padding: 2.5rem 3.5rem; max-width: 520px; width: 100%; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .upload-box:hover, .upload-box.drag { border-color: var(--ink); }
+  .upload-box h2 { font-family: 'Inter', sans-serif; font-size: 1.1rem; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
   .upload-box p { font-size: 0.82rem; color: var(--ink-3); line-height: 1.6; }
-  .btn-primary { margin-top: 1.5rem; padding: 0.65rem 2rem; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; display: inline-block; }
+  .btn-primary { margin-top: 1.5rem; padding: 0.65rem 2rem; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'Inter', sans-serif; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; display: inline-block; }
   .btn-primary:hover { opacity: 0.75; }
   #file-input { display: none; }
 
   /* ── PROGRESS ── */
   #screen-progress { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; gap: 1.5rem; text-align: center; }
-  .progress-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; color: var(--ink-2); }
+  .progress-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 400; color: var(--ink-2); }
   .progress-sub { font-size: 0.83rem; color: var(--ink-3); max-width: 400px; line-height: 1.6; }
   .progress-track { width: 100%; max-width: 440px; height: 3px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s ease; width: 0%; }
@@ -54,154 +87,353 @@
   .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--paper-3); }
   .cache-box { background: var(--paper-2); border: 1px solid var(--paper-3); border-radius: 6px; padding: 1.2rem 1.5rem; max-width: 520px; width: 100%; text-align: center; }
   .cache-box p { font-size: 0.82rem; color: var(--ink-3); margin-bottom: 0.8rem; line-height: 1.5; }
-  .btn-secondary { padding: 0.55rem 1.6rem; background: transparent; color: var(--ink-2); border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+  .btn-secondary { padding: 0.55rem 1.6rem; background: transparent; color: var(--ink-2); border: 1px solid var(--paper-3); border-radius: 3px; font-family: 'Inter', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
   .btn-secondary:hover { border-color: var(--ink-3); color: var(--ink); }
   /* Save index button in app */
-  .save-index-btn { position: fixed; bottom: 20px; right: 20px; padding: 0.6rem 1.2rem; background: var(--ink); color: var(--paper); border: none; border-radius: 20px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; opacity: 0.85; transition: opacity 0.2s; z-index: 100; display: none; }
+  .save-index-btn { position: fixed; bottom: 20px; right: 20px; padding: 0.6rem 1.2rem; background: var(--ink); color: var(--paper); border: none; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: 0.8rem; cursor: pointer; opacity: 0.85; transition: opacity 0.2s; z-index: 100; display: none; }
   .save-index-btn:hover { opacity: 1; }
   .save-index-btn.saved { background: #4caf50; }
 
-  header { position: sticky; top: 0; z-index: 50; background: var(--paper); border-bottom: 1px solid var(--line); padding: 1rem 2rem; display: flex; align-items: center; gap: 1.2rem; }
-  header h1 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
-  header h1 span { color: var(--ink-3); font-weight: 400; font-style: italic; }
-  .search-row { flex: 1; display: flex; gap: 0.6rem; }
-  #search-input { flex: 1; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.55rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 300; color: var(--ink); background: white; outline: none; transition: border-color 0.2s; }
-  #search-input:focus { border-color: var(--accent); }
+  /* ── LAYOUT APP: sidebar + main ── */
+  #screen-app { display: flex; min-height: 100vh; }
+  #sidebar { width: 260px; flex-shrink: 0; height: 100vh; position: sticky; top: 0; overflow-y: auto; border-right: 1px solid var(--line); background: var(--paper-2); display: flex; flex-direction: column; transition: width 0.18s ease; }
+  #sidebar.collapsed { width: 0 !important; overflow: hidden; border-right: none; }
+  #sidebar-resize-handle { width: 4px; flex-shrink: 0; cursor: ew-resize; background: transparent; transition: background 0.2s; z-index: 20; }
+  .sidebar-expand-btn { position: fixed; top: 14px; left: 14px; z-index: 60; width: 30px; height: 30px; display: none; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--paper-3); border-radius: 5px; cursor: pointer; color: var(--ink-3); font-size: 0.85rem; box-shadow: 0 1px 4px var(--shadow); transition: all 0.15s; }
+  .sidebar-expand-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .sidebar-collapse-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--ink-3); font-size: 0.85rem; padding: 3px 7px; border-radius: 4px; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
+  .sidebar-collapse-btn:hover { color: var(--ink); background: var(--paper-3); }
+  .theme-toggle-btn { position: fixed; bottom: 20px; left: 20px; z-index: 100; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--paper-3); border-radius: 50%; cursor: pointer; font-size: 0.95rem; color: var(--ink-3); box-shadow: 0 1px 4px var(--shadow); transition: all 0.15s; }
+  .theme-toggle-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  #sidebar-resize-handle:hover { background: var(--paper-3); }
+  .sidebar-brand { padding: 1.1rem 1.2rem 1rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+  .sidebar-brand-icon { width: 18px; height: 18px; background: var(--ink); border-radius: 2px; flex-shrink: 0; }
+  .sidebar-brand-name { font-size: 0.85rem; font-weight: 500; color: var(--ink); letter-spacing: -0.02em; }
+  .sidebar-search { padding: 0.8rem 0.8rem 0.4rem; flex-shrink: 0; }
+  .sidebar-search-row { display: flex; gap: 0.4rem; }
+  #search-input { flex: 1; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.48rem 0.7rem; font-family: 'Inter', sans-serif; font-size: 0.83rem; color: var(--ink); background: var(--card); outline: none; transition: border-color 0.2s; min-width: 0; }
+  #search-input:focus { border-color: var(--ink); }
   #search-input::placeholder { color: var(--ink-3); }
-  .btn-search { padding: 0.55rem 1.2rem; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; }
-  .btn-search:hover { opacity: 0.75; }
-  .btn-search:disabled { opacity: 0.4; cursor: default; }
-  #stats-bar { font-size: 0.72rem; color: var(--ink-3); white-space: nowrap; flex-shrink: 0; }
-
-  /* Chips */
-  .chips-row { padding: 0.7rem 2rem; border-bottom: 1px solid var(--line); display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
-  .chip-label { font-size: 0.7rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.2rem; }
-  .chip { padding: 0.25rem 0.8rem; border: 1px solid var(--paper-3); border-radius: 20px; font-size: 0.75rem; color: var(--ink-2); cursor: pointer; background: white; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ── HYBRID CONTROL ── */
-  .hybrid-bar {
-    padding: 0.7rem 2rem;
-    border-bottom: 1px solid var(--line);
-    background: var(--paper-2);
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    flex-wrap: wrap;
-  }
-  .hybrid-label { font-size: 0.72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-
-  .mode-slider-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex: 1;
-    min-width: 260px;
-  }
-  .mode-tag {
-    font-size: 0.72rem;
-    font-weight: 500;
-    white-space: nowrap;
-    min-width: 60px;
-  }
-  .mode-tag.keywords { color: var(--accent-warm, #8b3a2a); text-align: right; }
-  .mode-tag.semantic { color: var(--accent); text-align: left; }
-
-  #hybrid-slider {
-    flex: 1;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  #hybrid-mode-label {
-    font-size: 0.75rem;
-    color: var(--ink-2);
-    font-weight: 500;
-    min-width: 110px;
-    text-align: center;
-    background: white;
-    border: 1px solid var(--paper-3);
-    border-radius: 20px;
-    padding: 2px 10px;
-  }
-
-  .filter-mini { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; flex-wrap: wrap; }
-  .filter-mini label { font-size: 0.72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; }
-  .filter-mini select { border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.28rem 0.6rem; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--ink); background: white; outline: none; max-width: 220px; }
-  #result-count { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; }
+  .btn-search { padding: 0.48rem 0.75rem; background: var(--ink); color: var(--paper); border: none; border-radius: 3px; font-family: 'Inter', sans-serif; font-size: 0.8rem; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+  .btn-search:hover { opacity: 0.7; }
+  .btn-search:disabled { opacity: 0.3; cursor: default; }
+  #stats-bar { font-size: 0.68rem; color: var(--ink-3); padding: 0.3rem 0.1rem; line-height: 1.4; }
+  .sidebar-section-title { font-size: 0.68rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; padding: 0.7rem 1.2rem 0.25rem; flex-shrink: 0; }
+  .sidebar-link { display: flex; align-items: center; gap: 0.55rem; width: 100%; padding: 0.42rem 1rem; border: none; background: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.82rem; color: var(--ink-3); text-align: left; border-radius: 0; transition: all 0.12s; }
+  .sidebar-link:hover { background: var(--paper-3); color: var(--ink); }
+  .sidebar-link.active { background: var(--ink); color: var(--paper); }
+  .sidebar-link-icon { font-size: 0.85rem; width: 16px; text-align: center; flex-shrink: 0; }
+  .sidebar-books { flex: 1; overflow-y: auto; padding-bottom: 1.5rem; }
+  .sidebar-book-item { display: flex; align-items: center; gap: 0.4rem; width: 100%; padding: 0.38rem 1rem; border: none; background: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.92rem; color: var(--ink-2); text-align: left; transition: background 0.1s; }
+  .sidebar-book-item:hover { background: var(--paper-3); }
+  .sidebar-book-item.active { color: var(--ink); font-weight: 500; background: var(--overlay-subtle); }
+  .sidebar-book-name { flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+  .sidebar-book-count { font-size: 0.7rem; color: var(--ink-3); flex-shrink: 0; }
+  .sidebar-cat-header { display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 1rem; cursor: pointer; user-select: none; margin-top: 0.8rem; background: var(--paper); border-radius: 4px; }
+  .sidebar-cat-header:first-child { margin-top: 0.3rem; }
+  .sidebar-cat-label { font-size: 0.86rem; font-weight: 700; letter-spacing: 0.02em; color: var(--cat-accent); }
+  .sidebar-cat-arrow { font-size: 0.66rem; color: var(--ink-3); transition: transform 0.15s; }
+  .sidebar-cat-arrow.collapsed { transform: rotate(-90deg); }
+  .sidebar-cat-books { overflow: hidden; }
+  #main-content { flex: 1; min-width: 0; }
+  .main-header { padding: 1rem 1.8rem 0.7rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; position: sticky; top: 0; background: var(--card); z-index: 10; }
+  .main-title { font-family: 'Inter', sans-serif; font-size: 1.1rem; font-weight: 500; color: var(--ink); letter-spacing: -0.02em; }
+  #result-count { font-size: 0.73rem; color: var(--ink-3); white-space: nowrap; }
+  #book-cat-selector { display: none; margin-left: auto; font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ink-3); border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.28rem 0.5rem; background: none; cursor: pointer; outline: none; max-width: 180px; transition: border-color 0.15s; }
+  #book-cat-selector:focus, #book-cat-selector:hover { border-color: var(--ink); color: var(--ink); }
+  #search-content { display: none; }
+  #screen-library { display: block; }
+  .lib-wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+  /* Input de búsqueda en Biblioteca (ya no es sticky, queda en main-header) */
+  #lib-search { border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.4rem 0.75rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; color: var(--ink); background: var(--paper-2); outline: none; width: 200px; transition: border-color 0.2s; }
+  #lib-search:focus { border-color: var(--ink); background: var(--card); }
+  /* Card con info de libro por card (estilo Readwise) */
+  .h-card-header { font-size: 0.8rem; margin-bottom: 0.45rem; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.2rem; }
+  .h-book { font-weight: 600; color: var(--ink); font-size: 0.8rem; }
+  .h-by { color: var(--ink-3); font-size: 0.77rem; margin: 0 0.1rem; }
+  .h-author { font-size: 0.77rem; color: var(--ink-3); font-style: italic; }
+  .h-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .h-scores { display: flex; gap: 0.4rem; align-items: center; margin-left: auto; }
+  .score-pill { font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; background: var(--ink); color: var(--paper); }
 
   /* Results */
-  #results { max-width: 860px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+  #results { padding: 1rem 1.8rem 3rem; max-width: 820px; margin: 0 auto; }
   .empty-state { padding: 4rem 2rem; text-align: center; color: var(--ink-3); }
-  .empty-state .big { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 400; color: var(--ink-2); margin-bottom: 0.5rem; }
+  .empty-state .big { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 400; color: var(--ink-2); margin-bottom: 0.5rem; }
   .empty-state p { font-size: 0.88rem; line-height: 1.7; }
 
-  .h-card { margin-bottom: 1rem; border-left: 3px solid var(--yellow-border); background: white; padding: 1rem 1.2rem 0.85rem; border-radius: 0 4px 4px 0; animation: fadeUp 0.18s ease both; }
-  .h-card.high { border-left-color: #4caf50; }
-  .h-card.mid { border-left-color: var(--yellow-border); }
-  .h-card.low { border-left-color: var(--paper-3); }
+  .h-card { margin-bottom: 0.65rem; background: var(--card); padding: 0.85rem 1rem 0.75rem; border-radius: 3px; animation: fadeUp 0.18s ease both; position: relative; }
+  .h-share-btn { position: absolute; top: 0.55rem; right: 0.55rem; background: none; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; color: var(--ink-3); opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s; font-family: 'Inter', sans-serif; padding: 2px 6px; border-radius: 3px; line-height: 1.2; }
+  .h-copy-btn { position:absolute;top:0.55rem;right:2.45rem;background:none;border:none;cursor:pointer;color:var(--ink-3);opacity:0;font-size:0.88rem;padding:2px 5px;border-radius:3px;transition:opacity 0.15s,color 0.15s,background 0.15s; }
+  .h-delete-btn { position:absolute;top:0.55rem;right:4.35rem;background:none;border:none;cursor:pointer;color:var(--ink-3);opacity:0;font-size:0.85rem;padding:2px 5px;border-radius:3px;transition:opacity 0.15s,color 0.15s,background 0.15s; }
+  .h-card:hover .h-share-btn, .h-card:hover .h-copy-btn, .clip-item:hover .h-copy-btn, .h-card:hover .h-delete-btn, .clip-item:hover .h-delete-btn { opacity:1; }
+  .h-delete-btn:hover { color:#b42318;background:var(--paper-2); }
+  .h-share-btn:hover { color: var(--ink); background: var(--paper-2); }
+  .h-copy-btn:hover { color:var(--ink);background:var(--paper-2); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: calc(400px + 100%) 0; } }
+  .cover-skeleton { width: 100%; height: 100%; background: linear-gradient(90deg, var(--paper-2) 25%, #e4e4e4 50%, var(--paper-2) 75%); background-size: 400px 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: 3px 3px 0 0; }
+  .cover-skeleton.active { background: linear-gradient(90deg, var(--paper-2) 20%, #d8d8d8 50%, var(--paper-2) 80%); background-size: 400px 100%; animation: shimmer 0.85s ease-in-out infinite; }
 
-  .h-text { font-family: 'Playfair Display', serif; font-size: 0.93rem; line-height: 1.75; color: var(--ink-2); margin-bottom: 0.65rem; }
-  .h-text mark { background: #fff3c4; color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .h-text { font-family: 'Fraunces', serif; font-size: 0.93rem; line-height: 1.75; color: var(--ink-2); margin-bottom: 0.65rem; }
+  .h-text mark { background: #fff3c4; color: #0a0a0a; padding: 0 2px; border-radius: 2px; }
+  html.dark-theme .h-text mark { background: #4a3c12; color: #ffe9a8; }
 
-  .h-meta { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
-  .h-book { font-size: 0.75rem; font-weight: 500; color: var(--accent); }
-  .h-author { font-size: 0.72rem; color: var(--ink-3); font-style: italic; }
-  .h-scores { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; }
-  .score-pill { font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; }
-  .score-sem { background: #e8f0fb; color: var(--accent); }
-  .score-kw { background: #fef3e2; color: #8b5a00; }
-  .score-hybrid { background: var(--paper-2); color: var(--ink-3); }
-
+  /* book-header, bh-author, bh-count — dead code, kept for safety */
   .book-header { margin: 1.8rem 0 0.7rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 0.8rem; }
-  .book-header h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+  .book-header h3 { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
   .bh-author { font-size: 0.78rem; color: var(--ink-3); font-style: italic; }
   .bh-count { margin-left: auto; font-size: 0.7rem; color: var(--ink-3); }
 
   .pagination { display: flex; justify-content: center; gap: 0.4rem; margin: 2rem 0; }
-  .pg-btn { padding: 0.38rem 0.85rem; border: 1px solid var(--paper-3); border-radius: 3px; background: white; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: var(--ink-2); cursor: pointer; transition: all 0.12s; }
+  .pg-btn { padding: 0.38rem 0.85rem; border: 1px solid var(--paper-3); border-radius: 3px; background: var(--card); font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ink-2); cursor: pointer; transition: all 0.12s; }
   .pg-btn:hover, .pg-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
-  .tab-bar { display: flex; border-bottom: 1px solid var(--line); background: var(--paper); }
-  .tab-btn { padding: 0.75rem 1.4rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-3); border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
-  .tab-btn:hover { color: var(--ink); }
-  .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); }
-  #screen-library { display: none; }
-  .lib-wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
-  .cat-section { margin-bottom: 1.8rem; }
-  .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.7rem; cursor: pointer; user-select: none; }
-  .cat-icon { font-size: 1.1rem; }
-  .cat-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; }
-  .cat-count { font-size: 0.72rem; color: var(--ink-3); margin-left: auto; }
-  .cat-arrow { font-size: 0.72rem; color: var(--ink-3); transition: transform 0.2s; }
+  .cat-section { margin-bottom: 2.2rem; }
+  .cat-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 1rem; cursor: pointer; user-select: none; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+  .cat-icon { font-size: 1.05rem; }
+  .cat-name { font-family: 'Inter', sans-serif; font-size: 1.18rem; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+  .cat-count { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .cat-arrow { font-size: 0.76rem; color: var(--ink-3); transition: transform 0.2s; }
   .cat-arrow.open { transform: rotate(90deg); }
-  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
-  .book-card-lib { background: white; border: 0.5px solid var(--paper-3); border-radius: 4px; padding: 0.75rem 0.9rem; cursor: pointer; transition: all 0.15s; border-left: 3px solid #ccc; }
-  .book-card-lib:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .book-card-lib.selected { background: #fafaf8; }
-  .book-title-lib { font-size: 0.82rem; font-weight: 500; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
-  .book-author-lib { font-size: 0.72rem; color: var(--ink-3); font-style: italic; }
-  .book-count-lib { font-size: 0.68rem; color: var(--ink-4); margin-top: 4px; }
-  .book-detail { display: none; background: white; border-radius: 5px; padding: 1.1rem 1.3rem; margin-top: 0.7rem; border: 0.5px solid var(--paper-3); }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .book-card-lib { background: var(--card); border: 1px solid var(--paper-3); border-radius: 4px; cursor: pointer; transition: all 0.15s; overflow: hidden; }
+  .book-card-lib:hover { border-color: var(--ink-3); }
+  .book-title-lib { font-size: 0.85rem; font-weight: 500; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
+  .book-author-lib { font-size: 0.73rem; color: var(--ink-3); }
+  .cover-actions { position:absolute;left:7px;right:7px;bottom:7px;display:flex;gap:5px;z-index:4;opacity:0;transition:opacity 0.15s; }
+  .book-card-lib:hover .cover-actions, .book-card-lib:focus-within .cover-actions { opacity:1; }
+  .cover-action-btn { flex:1;border:1px solid rgba(255,255,255,0.65);border-radius:3px;background:rgba(10,10,10,0.82);color:#fff;padding:0.32rem 0.35rem;font-family:'Inter',sans-serif;font-size:0.67rem;cursor:pointer;backdrop-filter:blur(4px); }
+  .cover-action-btn:hover { background:#000; }
+  @media (hover:none) { .cover-actions { opacity:1; } }
+  .book-count-lib { font-size: 0.68rem; color: var(--ink-3); margin-top: 5px; }
+  .book-detail { display: none; background: var(--card); border-radius: 5px; padding: 1.1rem 1.3rem; margin-top: 0.7rem; border: 0.5px solid var(--paper-3); }
   .book-detail.open { display: block; }
   .detail-header { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-  .detail-title { font-family: 'Playfair Display', serif; font-size: 0.98rem; font-weight: 600; color: var(--ink); }
+  .detail-title { font-family: 'Fraunces', serif; font-size: 0.98rem; font-weight: 600; color: var(--ink); }
   .detail-author { font-size: 0.75rem; color: var(--ink-3); font-style: italic; }
   .detail-count { margin-left: auto; font-size: 0.7rem; color: var(--ink-3); }
-  .detail-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.38rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink); background: var(--paper); outline: none; margin-bottom: 0.7rem; }
-  .detail-search:focus { border-color: var(--accent); }
-  .clip-item { border-left: 2px solid var(--paper-3); padding: 0.45rem 0.75rem; margin-bottom: 0.55rem; font-family: 'Playfair Display', serif; font-size: 0.83rem; line-height: 1.65; color: var(--ink-2); }
-  .clip-item mark { background: #fff3c4; color: var(--ink); padding: 0 2px; border-radius: 2px; }
-  .clips-more { font-size: 0.78rem; color: var(--ink-3); text-align: center; padding: 0.6rem; cursor: pointer; border: 1px dashed var(--paper-3); border-radius: 3px; }
-  .clips-more:hover { color: var(--accent); border-color: var(--accent); }
+  .detail-search { width: 100%; border: 1px solid var(--paper-3); border-radius: 3px; padding: 0.42rem 0.8rem; font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink); background: var(--paper-2); outline: none; margin-bottom: 0.7rem; }
+  .detail-search:focus { border-color: var(--ink); background: var(--card); }
+  .clip-item { padding: 0.55rem 2.8rem 0.55rem 0.9rem; margin-bottom: 0.6rem; font-family: 'Fraunces', serif; font-size: 0.88rem; line-height: 1.75; color: var(--ink-2); position: relative; }
+  .clip-item mark { background: #f0f0f0; color: #0a0a0a; padding: 0 2px; border-radius: 2px; }
+  html.dark-theme .clip-item mark { background: #3a3a3a; color: #f0f0f0; }
+  .clip-share-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; color: var(--ink-3); opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s; font-family: 'Inter', sans-serif; padding: 2px 5px; border-radius: 3px; line-height: 1.2; }
+  .clip-item:hover .clip-share-btn { opacity: 1; }
+  .clip-share-btn:hover { color: var(--ink); background: var(--paper-2); }
+  .clips-more { font-size: 0.78rem; color: var(--ink-3); text-align: center; padding: 0.65rem; cursor: pointer; border: 1px solid var(--paper-3); border-radius: 3px; }
+  .clips-more:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* ── BOOK THEMES ── */
+  .theme-toolbar { display:flex; gap:0.5rem; padding:0.6rem 0 0.9rem; flex-wrap:wrap; }
+  .theme-toolbar-btn { padding:0.3rem 0.7rem; border:1px solid var(--paper-3); border-radius:3px; background:none; font-family:'Inter',sans-serif; font-size:0.73rem; color:var(--ink-3); cursor:pointer; transition:all 0.15s; }
+  .theme-toolbar-btn:hover { border-color:var(--ink); color:var(--ink); }
+  .theme-section { margin-bottom:0.3rem; }
+  .theme-header { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.3rem; cursor:pointer; user-select:none; position:sticky; top:54px; background:var(--card); z-index:5; border-bottom:1px solid var(--line); margin-bottom:0.3rem; }
+  .theme-name-display { font-family:'Inter',sans-serif; font-size:0.86rem; font-weight:600; color:var(--ink); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .theme-name-input { flex:1; font-family:'Inter',sans-serif; font-size:0.86rem; font-weight:600; color:var(--ink); border:none; border-bottom:2px solid var(--ink); outline:none; background:transparent; padding:0; min-width:0; }
+  .theme-count-badge { font-size:0.65rem; color:var(--ink-3); background:var(--paper-2); padding:1px 7px; border-radius:8px; flex-shrink:0; }
+  .theme-edit-btn, .theme-del-btn { background:none; border:none; cursor:pointer; font-size:0.78rem; color:var(--ink-3); padding:2px 5px; border-radius:3px; opacity:0; transition:all 0.12s; flex-shrink:0; }
+  .theme-header:hover .theme-edit-btn, .theme-header:hover .theme-del-btn { opacity:1; }
+  .theme-edit-btn:hover, .theme-del-btn:hover { color:var(--ink); background:var(--paper-2); }
+  .theme-toggle-icon { font-size:0.7rem; color:var(--ink-3); flex-shrink:0; transition:transform 0.15s; }
+  .theme-toggle-icon.collapsed { transform:rotate(-90deg); }
+  .theme-clips-wrap { padding-top:0.2rem; }
+  .h-theme-chips { display:none; gap:0.3rem; flex-wrap:wrap; padding-top:0.5rem; margin-top:0.1rem; }
+  .h-card:hover .h-theme-chips { display:flex; }
+  .theme-chip { font-size:0.62rem; padding:2px 8px; border-radius:10px; border:1px solid var(--paper-3); color:var(--ink-3); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+  .theme-chip:hover { border-color:var(--ink-3); color:var(--ink-2); }
+  .theme-chip.active { background:var(--ink); color:var(--paper); border-color:var(--ink); cursor:default; pointer-events:none; }
+
+  /* ── VISUAL REFRESH 2026: biblioteca editorial contemporánea ── */
+  :root {
+    --ink:#211f1b; --ink-2:#49453f; --ink-3:#7d776e;
+    --paper:#f7f4ee; --paper-2:#eee9df; --paper-3:#ddd5c8;
+    --card:#fffdf9; --line:rgba(68,54,38,0.11);
+    --accent:#c65f35; --accent-bg:#c65f35; --accent-fg:#fffaf4;
+    --overlay-subtle:rgba(198,95,53,0.09); --shadow:rgba(59,43,27,0.13);
+    --brand:#c65f35; --brand-soft:#f5dfd3; --petrol:#32736d;
+    --sidebar-bg:#eee8dd;
+  }
+  html.dark-theme {
+    --ink:#f3eee6; --ink-2:#d4ccc1; --ink-3:#989087;
+    --paper:#161513; --paper-2:#211f1c; --paper-3:#39342e;
+    --card:#1d1b18; --line:rgba(255,240,220,0.10);
+    --accent:#e58155; --accent-bg:#e58155; --accent-fg:#181411;
+    --overlay-subtle:rgba(229,129,85,0.13); --shadow:rgba(0,0,0,0.48);
+    --brand:#e58155; --brand-soft:#42291f; --petrol:#65a9a1;
+    --sidebar-bg:#1b1916;
+  }
+
+  body { background:var(--paper); letter-spacing:-0.005em; }
+  button:focus, input:focus, select:focus { outline:none; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid color-mix(in srgb,var(--brand) 38%,transparent);outline-offset:2px; }
+  #screen-app { background:var(--paper); }
+  #sidebar {
+    width:278px; padding:10px; background:var(--sidebar-bg); border-right:0;
+    box-shadow:1px 0 0 var(--line), 12px 0 35px rgba(74,54,31,0.035);
+  }
+  .sidebar-brand { padding:0.9rem 0.75rem 1.05rem; border-bottom:0; }
+  .sidebar-brand-icon {
+    width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,var(--brand),#e59a64);
+    box-shadow:0 5px 14px rgba(198,95,53,0.28); position:relative;
+  }
+  .sidebar-brand-icon::after { content:'K';position:absolute;inset:0;display:grid;place-items:center;color:white;font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem; }
+  .sidebar-brand-name { font-family:'Fraunces',serif;font-size:1.08rem;font-weight:600;letter-spacing:-0.025em; }
+  .sidebar-collapse-btn { border-radius:8px;padding:6px 9px; }
+  .sidebar-search { padding:0.35rem 0.35rem 0.75rem; }
+  .sidebar-search-row { gap:7px; }
+  #search-input {
+    min-height:42px;border:1px solid transparent;border-radius:11px;padding:0.65rem 0.85rem;
+    background:var(--card);box-shadow:0 1px 0 var(--line),0 5px 18px rgba(62,45,28,0.045);
+  }
+  #search-input:focus { border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft); }
+  .btn-search { width:42px;border-radius:11px;background:var(--brand);font-size:0.95rem;box-shadow:0 5px 14px rgba(198,95,53,0.22); }
+  #stats-bar { padding:0.5rem 0.5rem 0;font-size:0.67rem;line-height:1.5; }
+  .sidebar-section-title { padding:0.85rem 0.7rem 0.35rem;font-size:0.62rem;letter-spacing:0.13em; }
+  .sidebar-link { margin:3px 0;padding:0.62rem 0.75rem;border-radius:10px;font-size:0.84rem;color:var(--ink-2); }
+  .sidebar-link:hover { background:rgba(255,255,255,0.45); }
+  html.dark-theme .sidebar-link:hover { background:rgba(255,255,255,0.06); }
+  .sidebar-link.active { background:var(--brand-soft);color:var(--brand);font-weight:600;box-shadow:inset 3px 0 0 var(--brand); }
+  .sidebar-books { padding:0 0 4rem; }
+  .sidebar-cat-header { margin-top:0.6rem;padding:0.55rem 0.65rem;background:transparent;border-radius:9px; }
+  .sidebar-cat-header:hover { background:rgba(255,255,255,0.38); }
+  .sidebar-cat-label { font-size:0.76rem;font-weight:700;letter-spacing:0.025em; }
+  .sidebar-book-item { padding:0.48rem 0.7rem;border-radius:9px;font-size:0.82rem;margin:1px 0; }
+  .sidebar-book-item:hover { background:rgba(255,255,255,0.48);transform:translateX(2px); }
+  html.dark-theme .sidebar-book-item:hover { background:rgba(255,255,255,0.06); }
+  .sidebar-book-item.active { background:var(--card);box-shadow:0 3px 12px rgba(60,44,27,0.07);color:var(--brand); }
+  .sidebar-book-count { min-width:25px;text-align:center;padding:2px 6px;border-radius:9px;background:var(--paper-2);font-size:0.64rem; }
+  .theme-toggle-btn { left:20px;bottom:18px;width:38px;height:38px;border:0;background:var(--card);box-shadow:0 6px 20px var(--shadow); }
+
+  #main-content { background:radial-gradient(circle at 90% 0%,rgba(198,95,53,0.045),transparent 28%),var(--paper); }
+  .main-header {
+    min-height:76px;padding:1rem clamp(1.4rem,3vw,3rem);border-bottom:1px solid var(--line);
+    background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(16px);
+  }
+  .main-title { font-family:'Fraunces',serif;font-size:1.65rem;font-weight:600;letter-spacing:-0.035em;line-height:1.05; }
+  #screen-library .main-title::after { content:'Tu biblioteca personal, organizada por ideas';display:block;margin-top:6px;font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:400;letter-spacing:0;color:var(--ink-3); }
+  #lib-search { width:min(270px,40vw);min-height:40px;border:1px solid var(--paper-3);border-radius:11px;padding:0.55rem 0.9rem;background:var(--card);box-shadow:0 3px 13px rgba(61,45,28,0.045); }
+  #lib-search:focus { border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft); }
+  .lib-wrap { max-width:1180px;padding:2.1rem clamp(1.4rem,3vw,3rem) 6rem; }
+  .cat-section { margin-bottom:3.1rem; }
+  .cat-header { align-items:center;gap:12px;margin-bottom:1.15rem;padding:0.8rem 0;border-bottom:1px solid var(--line); }
+  .cat-icon { width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--brand-soft);font-size:1rem; }
+  .cat-name { font-family:'Fraunces',serif;font-size:1.32rem;font-weight:600; }
+  .cat-count { padding:0.32rem 0.65rem;border-radius:999px;background:var(--paper-2);font-size:0.69rem; }
+  .cat-arrow { width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--card); }
+  .book-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px; }
+  .book-card-lib { border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 20px rgba(61,45,28,0.055);transform:translateY(0);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }
+  .book-card-lib:hover { transform:translateY(-5px);border-color:rgba(198,95,53,0.35);box-shadow:0 16px 34px rgba(61,45,28,0.13); }
+  .book-card-lib > div:first-child { height:245px!important; }
+  .book-card-lib > div:last-child { padding:0.9rem 1rem 1rem!important; }
+  .book-title-lib { min-height:2.5em;font-family:'Fraunces',serif;font-size:0.98rem;font-weight:600;line-height:1.25;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+  .book-author-lib { font-size:0.72rem;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .book-count-lib { display:inline-flex;margin-top:9px;padding:3px 8px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);font-size:0.65rem; }
+  .cover-skeleton { border-radius:13px 13px 0 0;background:linear-gradient(110deg,var(--paper-2) 20%,var(--paper-3) 42%,var(--paper-2) 64%);background-size:220% 100%; }
+  .cover-actions { left:10px;right:10px;bottom:10px;gap:7px; }
+  .cover-action-btn { padding:0.45rem;border:0;border-radius:8px;background:rgba(30,25,21,.78);box-shadow:0 5px 15px rgba(0,0,0,.16); }
+
+  #results { max-width:880px;padding:1.8rem clamp(1.4rem,3vw,3rem) 5rem; }
+  .h-card { margin-bottom:1rem;padding:1.15rem 1.3rem 1rem;border:1px solid var(--line);border-radius:13px;box-shadow:0 5px 20px rgba(61,45,28,0.05); }
+  .h-card:hover { border-color:rgba(198,95,53,.25);box-shadow:0 10px 28px rgba(61,45,28,.09); }
+  .h-text { font-size:1rem;line-height:1.78; }
+  .clip-item {
+    margin-bottom:1rem;padding:1.15rem 3.5rem 1.1rem 1.3rem;
+    background:var(--card);border:1px solid var(--line);border-radius:13px;
+    box-shadow:0 5px 20px rgba(61,45,28,0.05);
+    font-size:1rem;line-height:1.78;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+  }
+  .clip-item:hover { transform:translateY(-2px);border-color:rgba(198,95,53,.25);box-shadow:0 10px 28px rgba(61,45,28,.09); }
+  .clip-item .clip-share-btn { top:0.9rem;right:0.85rem; }
+  .clip-item .h-copy-btn { top:0.9rem;right:2.8rem; }
+  .clip-item .h-delete-btn { top:0.9rem;right:4.75rem; }
+  .score-pill { background:var(--brand-soft);color:var(--brand);font-weight:600; }
+  .save-index-btn { right:26px;bottom:24px;padding:0.75rem 1.15rem;border-radius:12px;background:var(--brand);color:white;opacity:1;box-shadow:0 10px 26px rgba(198,95,53,.28);font-weight:600; }
+  .save-index-btn:hover { transform:translateY(-2px);box-shadow:0 14px 30px rgba(198,95,53,.36); }
+  .btn-secondary,.theme-toolbar-btn,.pg-btn,.clips-more { border-radius:9px; }
+  .empty-state { padding:5rem 2rem; }
+  .empty-state .big { font-size:1.6rem;color:var(--ink); }
+
+  @media (max-width:760px) {
+    #sidebar { width:238px; }
+    .main-header { min-height:68px;padding:0.85rem 1rem; }
+    .main-title { font-size:1.35rem; }
+    #screen-library .main-title::after { display:none; }
+    .lib-wrap { padding:1.2rem 1rem 5rem; }
+    .book-grid { grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px; }
+    .book-card-lib > div:first-child { height:210px!important; }
+  }
+
+  /* Pantallas panorámicas: más tapas por fila y subrayados anchos,
+     siempre en una sola columna para mantener el recorrido de lectura. */
+  @media (min-width:1440px) {
+    .lib-wrap { max-width:1500px; }
+    .book-grid { grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px; }
+    #results { max-width:1260px; }
+    .book-detail-wrap { max-width:1260px !important; }
+    .h-card, .clip-item { width:100%; }
+  }
+
+  /* Navegación unificada: cabecera horizontal y contenido a todo el ancho */
+  #screen-app { display:flex;flex-direction:column;min-height:100vh; }
+  #sidebar {
+    width:100%;height:auto;min-height:76px;position:sticky;top:0;z-index:80;overflow:visible;
+    padding:10px clamp(1rem,3vw,3rem);display:grid;grid-template-columns:auto minmax(280px,720px) auto;
+    align-items:center;gap:clamp(12px,2vw,28px);background:color-mix(in srgb,var(--paper) 90%,transparent);
+    border-bottom:1px solid var(--line);box-shadow:0 8px 30px rgba(61,45,28,.055);backdrop-filter:blur(18px);
+  }
+  .sidebar-brand { padding:0;border:0;white-space:nowrap; }
+  .sidebar-search { padding:0;min-width:0; }
+  .sidebar-search-row { width:100%; }
+  #search-input { font-size:.9rem; }
+  #stats-bar { padding:4px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .topbar-actions { display:flex;align-items:center;gap:8px;justify-content:flex-end; }
+  .topbar-btn { border:1px solid var(--paper-3);background:var(--card);color:var(--ink-2);border-radius:10px;padding:.62rem .85rem;font:600 .78rem 'Inter',sans-serif;cursor:pointer;white-space:nowrap; }
+  .topbar-btn:hover { border-color:var(--brand);color:var(--brand); }
+  #sidebar-resize-handle,.sidebar-expand-btn,.sidebar-collapse-btn { display:none!important; }
+  #main-content { width:100%;min-height:calc(100vh - 76px); }
+  .main-header { top:76px; }
+  .search-scope-tabs { display:flex;gap:6px;flex-wrap:wrap;margin-left:auto; }
+  .search-scope-btn { border:1px solid var(--paper-3);background:var(--card);color:var(--ink-3);border-radius:999px;padding:.38rem .72rem;font:600 .72rem 'Inter',sans-serif;cursor:pointer; }
+  .search-scope-btn.active { background:var(--brand);border-color:var(--brand);color:white; }
+  .unified-section { max-width:1260px;margin:0 auto 1.5rem; }
+  .unified-section-title { margin:0 0 .75rem;font:600 1rem 'Fraunces',serif;color:var(--ink); }
+  .meta-result-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px; }
+  .meta-result { text-align:left;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:1rem;cursor:pointer;color:var(--ink);box-shadow:0 4px 14px rgba(61,45,28,.04); }
+  .meta-result:hover { border-color:rgba(198,95,53,.4);transform:translateY(-2px); }
+  .meta-result-title { font:600 1rem 'Fraunces',serif;line-height:1.25; }
+  .meta-result-sub { margin-top:5px;font-size:.72rem;color:var(--ink-3);line-height:1.4; }
+  #screen-boot { min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--paper);color:var(--ink); }
+  .boot-logo { width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,var(--brand),#e59a64);color:white;font:600 1.5rem 'Fraunces',serif;box-shadow:0 12px 30px rgba(198,95,53,.25); }
+  .boot-title { font:600 1.45rem 'Fraunces',serif; }
+  .boot-status { color:var(--ink-3);font-size:.78rem; }
+  .boot-dot { width:6px;height:6px;border-radius:50%;background:var(--brand);animation:bootPulse 1.1s ease-in-out infinite alternate; }
+  @keyframes bootPulse { from { opacity:.25;transform:scale(.75); } to { opacity:1;transform:scale(1.2); } }
+  @media (max-width:760px) {
+    #sidebar { grid-template-columns:1fr auto;padding:10px 12px;gap:8px; }
+    .sidebar-brand-name,#stats-bar,.topbar-btn-label { display:none; }
+    .sidebar-search { grid-column:1 / -1;grid-row:2; }
+    .topbar-actions { grid-column:2;grid-row:1; }
+    .main-header { top:118px; }
+  }
 
 </style>
 </head>
 <body>
 
+<!-- Theme toggle (visible en toda la app) -->
+<button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar a tema oscuro/claro">🌙</button>
+
+<!-- Apertura limpia mientras se recupera la biblioteca guardada -->
+<div id="screen-boot">
+  <div class="boot-logo">K</div>
+  <div class="boot-title">Cerebro Kindle</div>
+  <div class="boot-status">Cargando biblioteca…</div>
+  <div class="boot-dot"></div>
+</div>
+
 <!-- UPLOAD -->
-<div id="screen-upload">
+<div id="screen-upload" style="display:none">
   <div class="brand">
     <h1>Cerebro Kindle</h1>
     <p>Búsqueda híbrida — semántica + keywords, combinadas</p>
@@ -221,6 +453,14 @@
     <button class="btn-secondary" onclick="document.getElementById('cache-input').click()">⚡ Cargar índice guardado</button>
     <input type="file" id="cache-input" accept=".json" style="display:none">
   </div>
+
+  <div class="or-divider">o si usás otro lector (Kobo, Moon+, etc.)</div>
+
+  <div class="cache-box">
+    <p>Cargá tu <strong>archivo JSON</strong> exportado con un script externo.<br>Campos requeridos: <code style="font-size:0.75rem">libro</code>, <code style="font-size:0.75rem">autor</code>, <code style="font-size:0.75rem">texto</code>.</p>
+    <button class="btn-secondary" onclick="document.getElementById('other-reader-input').click()">📖 Cargar JSON de otro lector</button>
+    <input type="file" id="other-reader-input" accept=".json" style="display:none">
+  </div>
 </div>
 
 <!-- Save index button (floating, shown after processing) -->
@@ -235,101 +475,307 @@
   <ul class="step-list">
     <li id="step-parse"><span class="step-icon">○</span> Parsear subrayados</li>
     <li id="step-filter"><span class="step-icon">○</span> Filtrar y deduplicar</li>
-    <li id="step-model"><span class="step-icon">○</span> Cargar modelo (~23MB, se cachea)</li>
-    <li id="step-embed"><span class="step-icon">○</span> Generar embeddings semánticos</li>
+    <li id="step-index"><span class="step-icon">○</span> Construir índice de búsqueda</li>
     <li id="step-done"><span class="step-icon">○</span> Listo</li>
   </ul>
 </div>
 
 <!-- APP -->
-<div id="screen-app">
-  <div id="tab-bar" style="display:none">
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('search')">🔍 Búsqueda</button>
-      <button class="tab-btn" onclick="switchTab('library')">📚 Biblioteca</button>
-    </div>
-  </div>
-  <div id="search-content">
-  <header>
-    <h1>Cerebro Kindle <span>— Búsqueda Híbrida</span></h1>
-    <div class="search-row">
-      <input type="text" id="search-input" placeholder="Buscá cualquier idea, concepto o pregunta..." autocomplete="off">
-      <button class="btn-search" id="btn-search" onclick="doSearch()">Buscar</button>
-    </div>
-    <div id="stats-bar"></div>
-  </header>
+<div id="screen-app" style="display:none">
 
-  <div class="chips-row">
-    <span class="chip-label">Sugerencias</span>
-    <span class="chip" onclick="qs('covid pandemia contagio')">covid / pandemia</span>
-    <span class="chip" onclick="qs('vínculo emocional con robots')">vínculo con robots</span>
-    <span class="chip" onclick="qs('sesgos cognitivos inteligencia artificial')">sesgos en IA</span>
-    <span class="chip" onclick="qs('impacto salud economía')">salud y economía</span>
-    <span class="chip" onclick="qs('privacidad datos vigilancia')">privacidad</span>
-    <span class="chip" onclick="qs('desigualdad poder económico')">desigualdad</span>
-    <span class="chip" onclick="qs('creatividad innovación')">creatividad</span>
-    <span class="chip" onclick="qs('futuro del trabajo automatización')">futuro del trabajo</span>
-    <span class="chip" onclick="qs('atención distracción digital')">distracción digital</span>
-    <span class="chip" onclick="qs('longevidad envejecimiento muerte')">longevidad</span>
+  <!-- ── SIDEBAR ── -->
+  <div id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"></div>
+      <span class="sidebar-brand-name">Cerebro Kindle</span>
+    </div>
+
+    <div class="sidebar-search">
+      <div class="sidebar-search-row">
+        <input type="text" id="search-input" placeholder="Buscar libros, autores o subrayados…" autocomplete="off">
+        <button class="btn-search" id="btn-search" onclick="doSearch()">↵</button>
+      </div>
+      <div id="stats-bar"></div>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="topbar-btn" id="nav-library" onclick="switchTab('library')">📚 <span class="topbar-btn-label">Biblioteca</span></button>
+      <button class="topbar-btn" id="btn-add-source" onclick="toggleAddPanel()">＋ <span class="topbar-btn-label">Agregar</span></button>
+    </div>
+
   </div>
 
-  <!-- HYBRID CONTROL -->
-  <div class="hybrid-bar">
-    <span class="hybrid-label">Modo de búsqueda</span>
-    <div class="mode-slider-wrap">
-      <span class="mode-tag keywords">Keywords</span>
-      <input type="range" id="hybrid-slider" min="0" max="100" value="50" step="10" oninput="updateHybridLabel()">
-      <span class="mode-tag semantic">Semántico</span>
-    </div>
-    <span id="hybrid-mode-label">Equilibrado</span>
+  <!-- ── MAIN CONTENT ── -->
+  <div id="main-content">
 
-    <div class="filter-mini">
-      <label>Libro</label>
-      <select id="book-filter" onchange="renderResults()">
-        <option value="">Todos</option>
-      </select>
-      <span id="result-count"></span>
+    <!-- Vista búsqueda / highlights -->
+    <div id="search-content">
+      <div class="main-header">
+        <button onclick="switchTab('library')" style="background:none;border:1px solid var(--paper-3);border-radius:7px;padding:0.35rem 0.75rem;cursor:pointer;font-size:0.76rem;color:var(--ink-3);font-family:'Inter',sans-serif;white-space:nowrap">← Biblioteca</button>
+        <span class="main-title">Todos los highlights</span>
+        <span id="result-count"></span>
+        <div class="search-scope-tabs" id="search-scope-tabs">
+          <button class="search-scope-btn active" data-scope="all" onclick="setSearchScope('all')">Todo</button>
+          <button class="search-scope-btn" data-scope="books" onclick="setSearchScope('books')">Libros</button>
+          <button class="search-scope-btn" data-scope="authors" onclick="setSearchScope('authors')">Autores</button>
+          <button class="search-scope-btn" data-scope="highlights" onclick="setSearchScope('highlights')">Subrayados</button>
+        </div>
+        <select id="book-cat-selector" onchange="reassignBookCat(this.value)" title="Mover a otra categoría"></select>
+        <button id="hide-book-btn" onclick="hideActiveBook()" style="display:none;background:none;border:1px solid var(--paper-3);border-radius:3px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.73rem;color:var(--ink-3);font-family:'Inter',sans-serif;transition:all 0.15s;white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='var(--ink)';this.style.color='var(--ink)'" onmouseout="this.style.borderColor='var(--paper-3)';this.style.color='var(--ink-3)'">✕ Ocultar libro</button>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <span style="font-size:0.65rem;color:var(--ink-3)">A</span>
+          <input type="range" id="hl-font-slider" min="0.8" max="1.4" step="0.05" value="0.93"
+            style="width:58px;accent-color:var(--ink);cursor:pointer"
+            oninput="setHlFontSize(this.value)">
+          <span style="font-size:1rem;color:var(--ink-3)">A</span>
+        </div>
+      </div>
+      <div id="results">
+        <div class="empty-state">
+          <p class="big">¿Qué querés encontrar?</p>
+          <p>Escribí cualquier idea, concepto o fragmento que recuerdes<br>y el buscador va a encontrar los subrayados más relevantes.</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Vista biblioteca -->
+    <div id="screen-library">
+      <div class="main-header">
+        <span class="main-title">Biblioteca</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:0.6rem">
+          <button id="retry-covers-btn" onclick="retryMissingCovers()"
+            style="display:none;padding:0.38rem 0.75rem;border:1px solid var(--paper-3);border-radius:3px;background:var(--card);font-family:'Inter',sans-serif;font-size:0.73rem;color:var(--ink-3);cursor:pointer;white-space:nowrap;transition:all 0.15s"
+            onmouseover="this.style.borderColor='var(--ink)';this.style.color='var(--ink)'"
+            onmouseout="this.style.borderColor='var(--paper-3)';this.style.color='var(--ink-3)'">
+            ↺ Reintentar tapas
+          </button>
+        </div>
+      </div>
+      <div class="lib-wrap" id="lib-content">
+        <div class="empty-state" style="padding:3rem 0">
+          <p class="big">Cargá tu biblioteca primero</p>
+          <p>La pestaña Biblioteca estará disponible<br>una vez que cargues tu archivo.</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div id="results">
-    <div class="empty-state">
-      <p class="big">¿Qué querés encontrar?</p>
-      <p>Usá el slider para balancear entre búsqueda exacta por palabras<br>y búsqueda por significado y concepto.</p>
-    </div>
-  </div>
-  </div>
+</div>
 
-<!-- LIBRARY -->
-<div id="screen-library">
-  <div class="lib-wrap" id="lib-content">
-    <div class="empty-state" style="padding:3rem 0">
-      <p class="big">Cargá tu biblioteca primero</p>
-      <p>La pestaña Biblioteca estará disponible<br>una vez que cargues tu archivo.</p>
+<!-- Book detail full-page screen -->
+<div id="screen-book-detail" style="display:none">
+  <div style="position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--line);padding:0.75rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+    <button onclick="backToLibrary()" style="background:none;border:1px solid var(--paper-3);border-radius:3px;padding:0.3rem 0.85rem;cursor:pointer;font-size:0.78rem;color:var(--ink-3);font-family:'Inter',sans-serif;transition:all 0.15s;white-space:nowrap;flex-shrink:0">← Biblioteca</button>
+    <button onclick="hideCurrentBook()" title="No mostrar este libro nunca más" style="background:none;border:1px solid var(--paper-3);border-radius:3px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.75rem;color:var(--ink-3);font-family:'Inter',sans-serif;transition:all 0.15s;white-space:nowrap;flex-shrink:0" onmouseover="this.style.borderColor='var(--ink)';this.style.color='var(--ink)'" onmouseout="this.style.borderColor='var(--paper-3)';this.style.color='var(--ink-3)'">✕ Ocultar</button>
+    <div style="display:flex;flex-direction:column;flex:1;min-width:0">
+      <span id="bkd-title" style="font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;color:var(--ink);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.01em"></span>
+      <span id="bkd-author" style="font-size:0.75rem;color:var(--ink-3)"></span>
     </div>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+      <span style="font-size:0.65rem;color:var(--ink-3)">A</span>
+      <input type="range" id="bkd-font-slider" min="0.75" max="1.4" step="0.05" value="0.95"
+        style="width:58px;accent-color:var(--ink);cursor:pointer"
+        oninput="setClipFontSize(this.value)">
+      <span style="font-size:0.95rem;color:var(--ink-3)">A</span>
+    </div>
+  </div>
+  <div class="book-detail-wrap" style="max-width:960px;margin:0 auto;padding:1.5rem 2.5rem 4rem">
+    <input class="detail-search" id="bkd-search" placeholder="Filtrar en este libro..." style="margin-bottom:0.75rem" oninput="filterBookDetail(this.value)">
+    <div id="bkd-stats" style="font-size:0.75rem;color:var(--ink-3);margin-bottom:1rem"></div>
+    <div id="bkd-clips"></div>
   </div>
 </div>
+
+<!-- Add source panel -->
+<div id="add-panel" style="display:none;position:fixed;top:16px;right:16px;z-index:300;background:var(--card);border:1px solid var(--paper-3);border-radius:8px;padding:1rem 1.2rem;min-width:265px;box-shadow:0 4px 20px var(--shadow)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem">
+    <span style="font-size:0.85rem;font-weight:500;color:var(--ink-2)">Agregar otra fuente</span>
+    <button onclick="toggleAddPanel()" style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-3);line-height:1">✕</button>
+  </div>
+  <p style="font-size:0.78rem;color:var(--ink-3);margin-bottom:0.8rem;line-height:1.5">Los nuevos clips se combinan con los ya cargados.</p>
+  <div style="display:flex;flex-direction:column;gap:0.5rem">
+    <button class="btn-secondary" onclick="document.getElementById('add-txt-input').click();toggleAddPanel()" style="width:100%;text-align:left">📚 My_Clippings.txt</button>
+    <button class="btn-secondary" onclick="document.getElementById('add-json-input').click();toggleAddPanel()" style="width:100%;text-align:left">📖 JSON de otro lector</button>
+  </div>
+  <input type="file" id="add-txt-input" accept=".txt" style="display:none">
+<input type="file" id="add-json-input" accept=".json" style="display:none">
+<input type="file" id="cover-file-input" accept="image/jpeg,image/png,image/webp" style="display:none">
+  <hr style="border:none;border-top:1px solid var(--paper-3);margin:0.8rem 0">
+  <button onclick="clearAndReset()" style="width:100%;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.75rem;color:var(--ink-3);text-align:left;padding:0.2rem 0;transition:color 0.15s" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink-3)'">🗑 Borrar todo y empezar de cero</button>
 </div>
 
 <script type="module">
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js';
-env.allowLocalModels = false;
-env.useBrowserCache = true;
-
 // ── State ──
 let clippings = [];
-let embeddings = null;
-let extractor = null;
+let bm25Index = null;
 let currentResults = [];
 let currentPage = 1;
+let searchScope = 'all';
+let currentBookMatches = [];
+let currentAuthorMatches = [];
 const PER_PAGE = 25;
+let _bookFilter = ''; // libro activo en sidebar
+let clipFontSize = parseFloat(localStorage.getItem('clipFontSize') || '0.95');
+let hlFontSize = parseFloat(localStorage.getItem('hlFontSize') || '0.93');
+let currentBookDetail = null;
+let bookDetailFilter = '';
+let allClippings = []; // todos los clips sin cap por libro (para Biblioteca)
+const hiddenBooks = new Set(JSON.parse(localStorage.getItem('hiddenBooks') || '[]'));
+const deletedClipKeys = new Set(JSON.parse(localStorage.getItem('deletedClipKeys') || '[]'));
+const bookThemesStore = JSON.parse(localStorage.getItem('bookThemes') || '{}');
+const bookCategoryOverrides = JSON.parse(localStorage.getItem('bookCategoryOverrides') || '{}');
+
+// ── IndexedDB — persistencia automática ──────────────────────
+const _IDB_NAME = 'kindleBrain';
+const _IDB_STORE = 'index';
+
+function _openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(_IDB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(_IDB_STORE);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+// Guarda el estado actual en IDB (se llama tras cada procesamiento)
+async function persistIndex() {
+  if (!clippings.length) return;
+  try {
+    const db = await _openIDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readwrite');
+      tx.objectStore(_IDB_STORE).put({
+        version: 2,
+        saved: new Date().toISOString(),
+        clippings,
+        allClippings,
+        coverCache,
+        hiddenBooks: [...hiddenBooks],
+        deletedClipKeys: [...deletedClipKeys]
+      }, 'current');
+      tx.oncomplete = resolve;
+      tx.onerror = e => reject(e.target.error);
+    });
+    console.log('[IDB] Auto-guardado:', clippings.length, 'clips');
+  } catch(e) {
+    console.warn('[IDB] Auto-save falló:', e);
+  }
+}
+
+// Borra los datos guardados y vuelve a la pantalla de carga
+window.clearAndReset = async function() {
+  if (!confirm('¿Borrar todos los datos guardados y empezar de cero?')) return;
+  try {
+    const db = await _openIDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readwrite');
+      tx.objectStore(_IDB_STORE).clear();
+      tx.oncomplete = resolve;
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch(e) { console.warn('[IDB] Clear falló:', e); }
+  clippings = []; allClippings = []; bm25Index = null; currentResults = [];
+  hiddenBooks.clear(); hiddenBooksNorm.clear(); deletedClipKeys.clear();
+  localStorage.removeItem('hiddenBooks');
+  localStorage.removeItem('deletedClipKeys');
+  document.getElementById('add-panel').style.display = 'none';
+  show('screen-upload');
+};
+
+// Intenta restaurar el índice guardado al iniciar
+async function tryAutoLoad() {
+  try {
+    const db = await _openIDB();
+    const data = await new Promise((resolve, reject) => {
+      const tx = db.transaction(_IDB_STORE, 'readonly');
+      const req = tx.objectStore(_IDB_STORE).get('current');
+      req.onsuccess = e => resolve(e.target.result || null);
+      req.onerror = e => reject(e.target.error);
+    });
+    if (!data || !data.clippings || !data.version) {
+      show('screen-upload');
+      return;
+    }
+
+    (data.hiddenBooks || []).forEach(addHidden);
+    (data.deletedClipKeys || []).forEach(k => deletedClipKeys.add(k));
+    localStorage.setItem('deletedClipKeys', JSON.stringify([...deletedClipKeys]));
+    const rawClips = data.allClippings || data.clippings;
+    allClippings = filterClippingsAll(rawClips);
+    clippings    = filterClippings(rawClips);
+    if (data.coverCache) {
+      Object.entries(data.coverCache).forEach(([k, v]) => { if (v !== null) coverCache[k] = v; });
+    }
+    bm25Index = buildBM25(clippings.map(c => c.text));
+
+    const books = [...new Set(clippings.map(c => c.bookRaw))].sort();
+    const savedDate = data.saved
+      ? new Date(data.saved).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' })
+      : '';
+    document.getElementById('stats-bar').textContent =
+      `${clippings.length.toLocaleString()} clips · ${books.length} libros · guardado el ${savedDate} ⚡`;
+
+    show('screen-app');
+    document.getElementById('search-input').focus();
+    document.getElementById('save-btn').style.display = 'block';
+    // Restaurar tamaño de fuente de highlights
+    const hlSlider = document.getElementById('hl-font-slider');
+    if (hlSlider) hlSlider.value = hlFontSize;
+    setTimeout(fixLayout, 0);
+    renderLibrary();
+    populateSidebarBooks();
+    switchTab('library');
+    console.log('[IDB] Auto-cargado:', clippings.length, 'clips');
+  } catch(e) {
+    console.warn('[IDB] Auto-load falló:', e);
+    show('screen-upload');
+  }
+}
+
+// Compara bookRaw también en forma normalizada (para tolerar diferencias de formato entre Kindle/Boox/etc.)
+function normBookKey(raw) {
+  // "No-cosas (Byung-Chul Han)" → "no-cosas (byung-chul han)"  (sin acentos, minúsculas)
+  return raw.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+}
+// Precalcular las versiones normalizadas de los libros ocultos
+const hiddenBooksNorm = new Set([...hiddenBooks].map(normBookKey));
+
+function isHidden(bookRaw) {
+  return hiddenBooks.has(bookRaw) || hiddenBooksNorm.has(normBookKey(bookRaw));
+}
+
+// Identidad estable y compatible con índices anteriores: libro + texto completo.
+function persistentClipKey(c) {
+  return 'text:' + normTxt(c.bookRaw || '') + '|' + normTxt(c.text || '');
+}
+function isDeleted(c) { return deletedClipKeys.has(persistentClipKey(c)); }
+function rememberDeleted(c) {
+  deletedClipKeys.add(persistentClipKey(c));
+  localStorage.setItem('deletedClipKeys', JSON.stringify([...deletedClipKeys]));
+}
+function addHidden(raw) {
+  hiddenBooks.add(raw);
+  hiddenBooksNorm.add(normBookKey(raw));
+  localStorage.setItem('hiddenBooks', JSON.stringify([...hiddenBooks]));
+}
+function removeHidden(raw) {
+  hiddenBooks.delete(raw);
+  hiddenBooksNorm.delete(normBookKey(raw));
+  localStorage.setItem('hiddenBooks', JSON.stringify([...hiddenBooks]));
+}
 
 // ── Screens ──
 function show(id) {
-  ['screen-upload','screen-progress','screen-app'].forEach(s => {
+  ['screen-boot','screen-upload','screen-progress','screen-app','screen-book-detail'].forEach(s => {
     const el = document.getElementById(s);
-    if (s === id) el.style.display = s === 'screen-progress' ? 'flex' : 'block';
-    else el.style.display = 'none';
+    if (s === id) {
+      if (['screen-boot','screen-upload','screen-progress','screen-app'].includes(s)) el.style.display = 'flex';
+      else el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
   });
 }
 
@@ -346,9 +792,122 @@ function setProg(pct, title, sub, detail) {
   document.getElementById('prog-detail').textContent = detail || '';
 }
 
+// ── BM25 Search Engine ──
+const SPANISH_STOPS = new Set([
+  'de','la','que','el','en','y','a','los','del','se','las','por','un','para','con',
+  'una','su','al','lo','como','mas','pero','sus','le','ya','o','este','si','porque',
+  'esta','entre','cuando','muy','sin','sobre','tambien','me','hasta','hay','donde',
+  'quien','desde','todo','nos','durante','todos','uno','les','ni','contra','otros',
+  'ese','eso','ante','ellos','e','esto','mi','antes','algunos','que','unos','yo',
+  'otro','otras','otra','el','tanto','esa','estos','mucho','quienes','nada','muchos',
+  'cual','poco','ella','estar','estas','algunas','algo','nosotros','te','ti','tu',
+  'tus','ellas','vuestro','vuestra','vuestros','vuestras','os','fue','han','era',
+  'son','esta','sea','sean','sido','tiene','ha','habia','tienen','ser','es','eran',
+  'hay','ser','siendo','bien','ahi','asi','aun','cada','cuya','cuyo','cualquier'
+]);
+const BM25_K1 = 1.5, BM25_B = 0.75;
+
+function normTxt(t) {
+  return t.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+function tokenize(text) {
+  return normTxt(text).split(' ').filter(t => t.length >= 2 && !SPANISH_STOPS.has(t));
+}
+
+function buildBM25(docs) {
+  const N = docs.length;
+  const tf = [], dl = [];
+  const df = {};
+  docs.forEach((doc, i) => {
+    const tokens = tokenize(doc);
+    dl.push(tokens.length);
+    const freq = {};
+    tokens.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
+    tf.push(freq);
+    Object.keys(freq).forEach(t => { df[t] = (df[t] || 0) + 1; });
+  });
+  const avgdl = dl.reduce((a, b) => a + b, 0) / N || 1;
+  const idf = {};
+  Object.keys(df).forEach(t => {
+    idf[t] = Math.log((N - df[t] + 0.5) / (df[t] + 0.5) + 1);
+  });
+  return { tf, idf, dl, avgdl, N };
+}
+
+function parseSearchQuery(query) {
+  const phrases = [];
+  const looseQuery = query.replace(/["“]([^"”]+)["”]/g, (_, phrase) => {
+    const normalized = normTxt(phrase);
+    if (normalized) phrases.push(normalized);
+    return ' ';
+  });
+  return {
+    phrases,
+    terms: tokenize(`${looseQuery} ${phrases.join(' ')}`),
+    highlights: [...phrases, ...tokenize(looseQuery)]
+  };
+}
+
+function bm25Search(query) {
+  if (!bm25Index) return [];
+  const { tf, idf, dl, avgdl } = bm25Index;
+  const { phrases, terms: qTerms } = parseSearchQuery(query);
+  if (qTerms.length === 0 && phrases.length === 0) return [];
+  const qNorm = normTxt(query);
+  const maxScore = { v: 0 };
+  const scored = clippings.map((c, i) => {
+    const docTf = tf[i], docLen = dl[i];
+    const docNorm = normTxt(c.text);
+    if (phrases.some(phrase => !docNorm.includes(phrase))) {
+      return { ...c, score: 0 };
+    }
+    let score = 0;
+    qTerms.forEach(t => {
+      const termIdf = idf[t] || 0;
+      const termTf = docTf[t] || 0;
+      score += termIdf * (termTf * (BM25_K1 + 1)) /
+        (termTf + BM25_K1 * (1 - BM25_B + BM25_B * docLen / avgdl));
+    });
+    // Quoted phrases are mandatory; this also keeps stop-word-only phrases searchable.
+    if (phrases.length) score += phrases.length;
+    else if (qTerms.length > 1 && docNorm.includes(qNorm)) score *= 2.0;
+    if (score > maxScore.v) maxScore.v = score;
+    return { ...c, score };
+  });
+  // Normalize scores to 0-100, filter low scores and hidden books
+  const norm = maxScore.v || 1;
+  return scored
+    .map(c => ({ ...c, hybrid: c.score / norm }))
+    .filter(c => c.score > 0.01 && !isHidden(c.bookRaw))
+    .sort((a, b) => b.score - a.score);
+}
+
 // ── Cache input handler ──
 document.getElementById('cache-input').addEventListener('change', e => {
   if (e.target.files[0]) loadIndex(e.target.files[0]);
+});
+
+// ── Other reader JSON handler ──
+document.getElementById('other-reader-input').addEventListener('change', async e => {
+  if (!e.target.files[0]) return;
+  const file = e.target.files[0];
+  show('screen-progress');
+  setProg(5, 'Leyendo archivo JSON...', '', '');
+  setStep('step-parse', 'active');
+  await tick();
+  try {
+    let text = await file.text();
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // strip BOM
+    const data = JSON.parse(text);
+    await mergeSource(parseNewReaderJSON(data));
+  } catch(err) {
+    setProg(0, 'Error al leer el JSON', err.message, '');
+    setTimeout(() => show('screen-upload'), 4000);
+  }
 });
 
 // ── Load from saved index ──
@@ -362,52 +921,47 @@ async function loadIndex(file) {
     const text = await file.text();
     const data = JSON.parse(text);
 
-    if (!data.clippings || !data.embeddings || !data.version) {
+    if (!data.clippings || !data.version) {
       throw new Error('Formato de índice inválido. Generá uno nuevo.');
     }
 
-    clippings = data.clippings;
-    // Restore Float32Arrays from regular arrays
-    embeddings = data.embeddings.map(arr => new Float32Array(arr));
+    // Filtrar libros ocultos al restaurar
+    (data.hiddenBooks || []).forEach(addHidden);
+    (data.deletedClipKeys || []).forEach(k => deletedClipKeys.add(k));
+    localStorage.setItem('deletedClipKeys', JSON.stringify([...deletedClipKeys]));
+    const rawClips = data.allClippings || data.clippings;
+    allClippings = filterClippingsAll(rawClips);
+    clippings    = filterClippings(rawClips);
+    if (data.coverCache) {
+      Object.entries(data.coverCache).forEach(([k, v]) => {
+        if (v !== null) coverCache[k] = v;
+      });
+    }
 
     setStep('step-parse', 'done');
     setStep('step-filter', 'done');
-    setProg(60, 'Cargando modelo de IA...', 'Solo para las búsquedas nuevas (~23MB, se cachea).', '');
-    setStep('step-model', 'active');
+    setStep('step-index', 'active');
+    setProg(60, 'Construyendo índice BM25...', '', `${clippings.length.toLocaleString()} fragmentos`);
     await tick();
-
-    extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
-      progress_callback: p => {
-        if (p.status === 'downloading') {
-          const pct = p.total ? Math.round(p.loaded / p.total * 100) : 0;
-          setProg(60 + pct * 0.35, 'Descargando modelo...', '', `${pct}%`);
-        }
-      }
-    });
-
-    setStep('step-model', 'done');
-    setStep('step-embed', 'done');
+    bm25Index = buildBM25(clippings.map(c => c.text));
+    setStep('step-index', 'done');
     setStep('step-done', 'done');
     setProg(100, '¡Índice cargado!', '', `${clippings.length.toLocaleString()} clips listos`);
 
-    // Populate book dropdown
+    // Populate sidebar books
     const books = [...new Set(clippings.map(c => c.bookRaw))].sort();
-    const sel = document.getElementById('book-filter');
-    sel.innerHTML = '<option value="">Todos</option>';
-    books.forEach(b => {
-      const o = document.createElement('option'); o.value = b;
-      const m = b.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-      o.textContent = m ? m[1].trim() : b;
-      sel.appendChild(o);
-    });
     document.getElementById('stats-bar').textContent =
       `${clippings.length.toLocaleString()} clips · ${books.length} libros · índice cacheado ⚡`;
 
     await tick();
     show('screen-app');
     document.getElementById('search-input').focus();
-    document.getElementById('tab-bar').style.display = 'block';
+    document.getElementById('save-btn').style.display = 'block';
+    setTimeout(fixLayout, 0);
     renderLibrary();
+    populateSidebarBooks();
+    switchTab('library');
+    persistIndex(); // migrar al IDB para auto-carga futura
 
   } catch(err) {
     setProg(0, 'Error al cargar el índice', err.message, '');
@@ -417,18 +971,20 @@ async function loadIndex(file) {
 
 // ── Save index ──
 window.saveIndex = function() {
-  if (!clippings.length || !embeddings) return;
+  if (!clippings.length) return;
 
   const btn = document.getElementById('save-btn');
   btn.textContent = 'Preparando...';
 
   setTimeout(() => {
     const data = {
-      version: 1,
+      version: 2,
       generated: new Date().toISOString(),
       clippings: clippings,
-      // Convert Float32Arrays to regular arrays for JSON
-      embeddings: embeddings.map(arr => Array.from(arr))
+      allClippings: allClippings,
+      coverCache: coverCache,
+      hiddenBooks: [...hiddenBooks],
+      deletedClipKeys: [...deletedClipKeys]
     };
 
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -464,55 +1020,38 @@ async function loadFile(file) {
   setStep('step-parse', 'active');
   setProg(5, 'Parseando subrayados...', '', '');
   await tick();
-  clippings = parseClippings(text);
-  setStep('step-parse', 'done');
+  const rawClipsKindle = parseClippings(text);
+  await mergeSource(rawClipsKindle);
+}
 
-  setStep('step-filter', 'active');
-  setProg(15, 'Filtrando...', '', `${clippings.length.toLocaleString()} encontrados`);
-  await tick();
-  clippings = filterClippings(clippings);
-  setStep('step-filter', 'done');
-  setProg(20, 'Filtrado listo', '', `${clippings.length.toLocaleString()} seleccionados`);
+// ── Parse JSON from other readers (Kobo, Moon+, etc.) ──
+function parseNewReaderJSON(data) {
+  if (!Array.isArray(data)) throw new Error('El JSON debe ser un array de subrayados.');
+  return data.flatMap(item => {
+    const texto = (item.texto || item.text || item.highlight || item.content || '').trim();
+    if (!texto) return [];
 
-  // Populate book dropdown
-  const books = [...new Set(clippings.map(c => c.bookRaw))].sort();
-  const sel = document.getElementById('book-filter');
-  books.forEach(b => {
-    const o = document.createElement('option'); o.value = b;
-    const m = b.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-    o.textContent = m ? m[1].trim() : b;
-    sel.appendChild(o);
-  });
-  document.getElementById('stats-bar').textContent = `${clippings.length.toLocaleString()} clips · ${books.length} libros`;
+    const libroRaw = (item.libro || item.book || item.title || '').trim();
+    const autorRaw = (item.autor || item.author || '').trim();
 
-  setStep('step-model', 'active');
-  setProg(22, 'Cargando modelo de IA...', 'Primera vez: ~23MB, queda cacheado.', '');
-  await tick();
-  extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
-    progress_callback: p => {
-      if (p.status === 'downloading') {
-        const pct = p.total ? Math.round(p.loaded / p.total * 100) : 0;
-        setProg(22 + pct * 0.15, 'Descargando modelo...', '', `${pct}% — ${p.file || ''}`);
-      }
+    // If libro contains " - Author" suffix, strip it to get clean title
+    let bookTitle = libroRaw;
+    if (autorRaw && libroRaw.endsWith(' - ' + autorRaw)) {
+      bookTitle = libroRaw.slice(0, -(autorRaw.length + 3)).trim();
     }
+    const bookAuthor = autorRaw;
+    const bookRaw = bookAuthor ? `${bookTitle} (${bookAuthor})` : bookTitle;
+
+    // Extract and preserve the complete highlight date when available.
+    let year = null;
+    const dateStr = item.fecha_subrayado || item.fecha_exportacion || item.date || item.seccion || '';
+    const yearMatch = String(dateStr).match(/\b(20\d{2})\b/);
+    if (yearMatch) year = parseInt(yearMatch[1]);
+    const parsedDate = Date.parse(dateStr);
+    const highlightDate = Number.isNaN(parsedDate) ? null : new Date(parsedDate).toISOString();
+
+    return [{ bookRaw, bookTitle, bookAuthor, text: texto, year, highlightDate, sourceId: item.id || null }];
   });
-  setStep('step-model', 'done');
-
-  setStep('step-embed', 'active');
-  setProg(38, 'Generando embeddings...', `Procesando ${clippings.length.toLocaleString()} fragmentos...`, '');
-  await tick();
-  embeddings = await generateEmbeddings(clippings.map(c => c.text));
-  setStep('step-embed', 'done');
-
-  setStep('step-done', 'done');
-  setProg(100, '¡Listo!', '', '');
-  await tick();
-  show('screen-app');
-  document.getElementById('search-input').focus();
-  // Show save button
-  document.getElementById('save-btn').style.display = 'block';
-  document.getElementById('tab-bar').style.display = 'block';
-  renderLibrary();
 }
 
 // ── Parse ──
@@ -528,109 +1067,193 @@ function parseClippings(raw) {
     const text = lines.slice(2).join(' ').trim();
     if (!text || text.length < 60 || meta.includes('marcador')) return [];
     const pm = bookRaw.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-    const dm = meta.match(/Añadido el \w+, (\d+) de (\w+) de (\d+)/);
+    const dm = meta.match(/Añadido el \w+, (\d+) de (\w+) de (\d+)(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
     let year = null;
-    if (dm) { const mo = monthMap[dm[2].toLowerCase()]; if (mo) year = parseInt(dm[3]); }
-    return [{ bookRaw, bookTitle: pm ? pm[1].trim() : bookRaw, bookAuthor: pm ? pm[2].trim() : '', text, year }];
+    let highlightDate = null;
+    if (dm) {
+      const mo = monthMap[dm[2].toLowerCase()];
+      if (mo) {
+        year = parseInt(dm[3]);
+        highlightDate = new Date(year, mo - 1, parseInt(dm[1]), parseInt(dm[4] || '0'), parseInt(dm[5] || '0'), parseInt(dm[6] || '0')).toISOString();
+      }
+    }
+    return [{ bookRaw, bookTitle: pm ? pm[1].trim() : bookRaw, bookAuthor: pm ? pm[2].trim() : '', text, year, highlightDate }];
   });
 }
 
 // ── Filter ──
-function filterClippings(clips) {
-  const seen = new Set(), bookCounts = {};
+// Para Biblioteca: deduplica, sin cap por libro, sin límite de largo
+// (Boox y otros lectores pueden exportar fragmentos más largos)
+function filterClippingsAll(clips) {
+  const seen = new Set();
   return clips
-    .filter(c => c.text.length <= 900)
+    .filter(c => !isHidden(c.bookRaw) && !isDeleted(c) && c.text.length >= 5)
     .sort((a, b) => b.text.length - a.text.length)
     .filter(c => {
-      const key = c.text.slice(0, 80).toLowerCase().replace(/\s+/g, ' ');
+      const key = persistentClipKey(c);
       if (seen.has(key)) return false; seen.add(key);
-      bookCounts[c.bookRaw] = (bookCounts[c.bookRaw] || 0) + 1;
-      return bookCounts[c.bookRaw] <= 80;
+      return true;
     });
 }
 
-// ── Embeddings ──
-async function generateEmbeddings(texts) {
-  const BATCH = 32, all = [], total = texts.length;
-  for (let i = 0; i < total; i += BATCH) {
-    const batch = texts.slice(i, i + BATCH);
-    const out = await extractor(batch, { pooling: 'mean', normalize: true });
-    const dim = 384;
-    for (let j = 0; j < batch.length; j++) all.push(out.data.slice(j * dim, (j + 1) * dim));
-    const pct = 38 + Math.round((i + batch.length) / total * 60);
-    setProg(pct, 'Generando embeddings...', '', `${Math.min(i + BATCH, total).toLocaleString()} / ${total.toLocaleString()}`);
-    await tick();
+// Para búsqueda BM25: deduplica + max 1200 chars (rendimiento), sin cap por libro
+function filterClippings(clips) {
+  const seen = new Set();
+  return clips
+    .filter(c => !isHidden(c.bookRaw) && !isDeleted(c) && c.text.length >= 5 && c.text.length <= 1200)
+    .sort((a, b) => b.text.length - a.text.length)
+    .filter(c => {
+      const key = persistentClipKey(c);
+      if (seen.has(key)) return false; seen.add(key);
+      return true;
+    });
+}
+
+// Botón y acción para eliminar una anotación de forma persistente. La "tumba"
+// queda guardada aunque el mismo JSON vuelva a importarse más adelante.
+window._deleteClipData = [];
+function deleteClipButton(c) {
+  const idx = window._deleteClipData.push(c) - 1;
+  return `<button class="h-delete-btn" onclick="event.stopPropagation();deleteClip(${idx})" title="Eliminar anotación">×</button>`;
+}
+
+// Copia el subrayado completo. El método alternativo mantiene la función
+// disponible también cuando el HTML local se abre directamente desde Finder.
+window._copyClipData = [];
+function copyClipButton(c) {
+  const idx = window._copyClipData.push(c.text || '') - 1;
+  return `<button class="h-copy-btn" onclick="event.stopPropagation();copyClipText(${idx},this)" title="Copiar subrayado">⧉</button>`;
+}
+
+window.copyClipText = async function(idx, button) {
+  const text = window._copyClipData[idx] || '';
+  if (!text) return;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(area);
+      area.focus(); area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    const original = button.textContent;
+    button.textContent = '✓';
+    button.title = 'Copiado';
+    setTimeout(() => { button.textContent = original; button.title = 'Copiar subrayado'; }, 1200);
+  } catch (e) {
+    alert('No se pudo copiar el subrayado.');
   }
-  return all;
-}
+};
 
-function cosineSim(a, b) { let d = 0; for (let i = 0; i < a.length; i++) d += a[i] * b[i]; return d; }
+window.deleteClip = async function(idx) {
+  const c = window._deleteClipData[idx];
+  if (!c || !confirm('¿Eliminar esta anotación? No volverá a aparecer al importar el mismo archivo.')) return;
+  rememberDeleted(c);
+  const key = persistentClipKey(c);
+  allClippings = allClippings.filter(x => persistentClipKey(x) !== key);
+  clippings = clippings.filter(x => persistentClipKey(x) !== key);
+  currentResults = currentResults.filter(x => persistentClipKey(x) !== key);
+  bm25Index = buildBM25(clippings.map(x => x.text));
+  await persistIndex();
+  populateSidebarBooks();
+  renderLibrary();
 
-// ── Keyword score ──
-function keywordScore(text, terms) {
-  const lower = text.toLowerCase();
-  let score = 0;
-  terms.forEach(t => {
-    const re = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-    const matches = lower.match(re);
-    if (matches) score += matches.length * 2 + 1;
-  });
-  return score;
-}
-
-function normalizeArr(arr) {
-  const max = Math.max(...arr.map(Math.abs));
-  return max > 0 ? arr.map(v => v / max) : arr;
-}
+  if (document.getElementById('screen-book-detail').style.display !== 'none' && currentBookDetail) {
+    currentBookDetail.c = currentBookDetail.c.filter(text =>
+      persistentClipKey({ bookRaw: currentBookDetail.raw, text }) !== key);
+    renderBookDetailClips(bookDetailFilter);
+  } else if (window._activeBrowseBook) {
+    filterByBook(window._activeBrowseBook);
+  } else if (document.getElementById('search-input').value.trim()) {
+    doSearch();
+  }
+};
 
 // ── Search ──
-window.doSearch = async function() {
-  const q = document.getElementById('search-input').value.trim();
-  if (!q || !extractor || !embeddings) return;
+function parseUnifiedQuery(query) {
+  const scoped = query.match(/^\s*(autor|libro|texto)\s*:\s*(.+)$/i);
+  const forcedScope = scoped ? ({ autor:'authors', libro:'books', texto:'highlights' })[normTxt(scoped[1])] : null;
+  const cleanQuery = (scoped ? scoped[2] : query).trim();
+  return { cleanQuery, forcedScope };
+}
 
-  document.getElementById('btn-search').disabled = true;
-  document.getElementById('btn-search').textContent = '...';
+function findMetadataMatches(query) {
+  const needle = normTxt(query.replace(/["“”]/g, ' '));
+  const words = needle.split(' ').filter(Boolean);
+  const books = new Map();
+  allClippings.forEach(c => {
+    if (!books.has(c.bookRaw)) books.set(c.bookRaw, { raw:c.bookRaw, title:c.bookTitle, author:c.bookAuthor, count:0 });
+    books.get(c.bookRaw).count++;
+  });
+  const bookMatches = [...books.values()].filter(b => {
+    const haystack = normTxt(`${b.title} ${b.author}`);
+    return words.length && words.every(word => haystack.includes(word));
+  }).sort((a,b) => normTxt(a.title).startsWith(needle) ? -1 : normTxt(b.title).startsWith(needle) ? 1 : a.title.localeCompare(b.title, 'es'));
 
-  const terms = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
-  const alpha = parseInt(document.getElementById('hybrid-slider').value) / 100; // 0=keywords, 1=semantic
+  const authors = new Map();
+  [...books.values()].forEach(b => {
+    (b.author || '').split(';').map(a => a.trim()).filter(Boolean).forEach(author => {
+      const key = normTxt(author);
+      if (!authors.has(key)) authors.set(key, { author, books:new Set(), clips:0 });
+      authors.get(key).books.add(b.raw);
+      authors.get(key).clips += b.count;
+    });
+  });
+  const authorMatches = [...authors.values()].filter(a => words.length && words.every(word => normTxt(a.author).includes(word)))
+    .sort((a,b) => a.author.localeCompare(b.author, 'es'));
+  return { bookMatches, authorMatches };
+}
 
-  // Semantic query embedding
-  const qEmbed = await extractor([q], { pooling: 'mean', normalize: true });
-  const qVec = qEmbed.data.slice(0, 384);
+window.setSearchScope = function(scope) {
+  searchScope = scope;
+  document.querySelectorAll('.search-scope-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.scope === scope));
+  if (document.getElementById('search-input').value.trim()) doSearch();
+};
 
-  // Score all
-  const rawSemantic = clippings.map((c, i) => cosineSim(qVec, embeddings[i]));
-  const rawKeyword = clippings.map(c => keywordScore(c.text, terms));
+window.doSearch = function() {
+  const rawQuery = document.getElementById('search-input').value.trim();
+  if (!rawQuery || !bm25Index) return;
+  const { cleanQuery: q, forcedScope } = parseUnifiedQuery(rawQuery);
+  if (!q) return;
+  if (forcedScope) searchScope = forcedScope;
+  document.querySelectorAll('.search-scope-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.scope === searchScope));
 
-  // Normalize both to [0,1]
-  const maxSem = Math.max(...rawSemantic) || 1;
-  const maxKw = Math.max(...rawKeyword) || 1;
+  // Limpiar filtro de libro y volver a pestaña de búsqueda
+  _bookFilter = '';
+  window._activeBrowseBook = null;
+  document.getElementById('hide-book-btn').style.display = 'none';
+  const _catSel = document.getElementById('book-cat-selector');
+  if (_catSel) _catSel.style.display = 'none';
+  document.querySelectorAll('.sidebar-book-item, #sb-all').forEach(b => b.classList.remove('active'));
+  document.getElementById('sb-all')?.classList.add('active');
+  switchTab('search');
 
-  currentResults = clippings.map((c, i) => {
-    const semScore = rawSemantic[i] / maxSem;
-    const kwScore = rawKeyword[i] / maxKw;
-    const hybrid = alpha * semScore + (1 - alpha) * kwScore;
-    return { ...c, semScore, kwScore, hybrid };
-  })
-  .filter(c => c.hybrid > 0.05)
-  .sort((a, b) => b.hybrid - a.hybrid);
-
+  const terms = parseSearchQuery(q).highlights;
+  const metadata = findMetadataMatches(q);
+  currentBookMatches = searchScope === 'all' || searchScope === 'books' ? metadata.bookMatches : [];
+  currentAuthorMatches = searchScope === 'all' || searchScope === 'authors' ? metadata.authorMatches : [];
+  currentResults = searchScope === 'all' || searchScope === 'highlights' ? bm25Search(q) : [];
   currentPage = 1;
-  renderResults(terms);
 
-  document.getElementById('btn-search').disabled = false;
-  document.getElementById('btn-search').textContent = 'Buscar';
+  const mainTitle = document.querySelector('#search-content .main-title');
+  if (mainTitle) mainTitle.textContent = 'Resultados';
+  renderResults(terms);
 };
 
 window.renderResults = function(terms) {
-  const bookFilter = document.getElementById('book-filter').value;
+  const bookFilter = _bookFilter;
   const filtered = currentResults.filter(c => !bookFilter || c.bookRaw === bookFilter);
 
-  document.getElementById('result-count').textContent = filtered.length > 0 ? `${filtered.length.toLocaleString()} resultados` : '';
+  const totalFound = filtered.length + currentBookMatches.length + currentAuthorMatches.length;
+  document.getElementById('result-count').textContent = totalFound > 0 ? `${totalFound.toLocaleString()} resultados` : '';
 
   const resultsEl = document.getElementById('results');
-  if (filtered.length === 0) {
-    resultsEl.innerHTML = `<div class="empty-state"><p class="big">Sin resultados</p><p>Probá mover el slider hacia keywords o cambiar los términos.</p></div>`;
+  if (totalFound === 0) {
+    resultsEl.innerHTML = `<div class="empty-state"><p class="big">Sin resultados</p><p>Probá con otras palabras o cambiá el filtro de libro.</p></div>`;
     return;
   }
 
@@ -643,33 +1266,44 @@ window.renderResults = function(terms) {
     groups[c.bookRaw].items.push(c);
   });
 
-  const alpha = parseInt(document.getElementById('hybrid-slider').value) / 100;
-
   let html = '';
+  window._searchBookData = currentBookMatches;
+  window._searchAuthorData = currentAuthorMatches;
+  if (currentBookMatches.length) {
+    html += `<section class="unified-section"><h2 class="unified-section-title">Libros</h2><div class="meta-result-grid">` +
+      currentBookMatches.slice(0, 24).map((b,i) => `<button class="meta-result" onclick="openSearchBook(${i})"><div class="meta-result-title">${highlightKw(b.title, terms)}</div><div class="meta-result-sub">${highlightKw(b.author, terms)} · ${b.count} subrayados</div></button>`).join('') +
+      `</div></section>`;
+  }
+  if (currentAuthorMatches.length) {
+    html += `<section class="unified-section"><h2 class="unified-section-title">Autores</h2><div class="meta-result-grid">` +
+      currentAuthorMatches.slice(0, 24).map((a,i) => `<button class="meta-result" onclick="searchAuthorResult(${i})"><div class="meta-result-title">${highlightKw(a.author, terms)}</div><div class="meta-result-sub">${a.books.size} libros · ${a.clips} subrayados</div></button>`).join('') +
+      `</div></section>`;
+  }
+  if (filtered.length) html += `<section class="unified-section"><h2 class="unified-section-title">Subrayados</h2></section>`;
+  window._resultShareData = [];
+  // Aplanar todos los items en orden, manteniendo la animación
+  let globalIdx = 0;
   Object.values(groups).forEach(g => {
-    html += `<div class="book-header">
-      <h3>${esc(g.title)}</h3>
-      <span class="bh-author">${esc(g.author)}</span>
-      <span class="bh-count">${g.items.length} resultado${g.items.length !== 1 ? 's' : ''}</span>
-    </div>`;
     g.items.forEach((c, i) => {
-      const hybPct = Math.round(c.hybrid * 100);
-      const cls = hybPct >= 65 ? 'high' : hybPct >= 35 ? 'mid' : 'low';
-      const displayText = terms ? highlightKw(c.text, terms) : esc(c.text);
-      const semPct = Math.round(c.semScore * 100);
-      const kwPct = Math.round(c.kwScore * 100);
-      html += `<div class="h-card ${cls}" style="animation-delay:${i*0.025}s">
-        <div class="h-text">${displayText}</div>
-        <div class="h-meta">
+      const scorePct = Math.round(c.hybrid * 100);
+      const cls = scorePct >= 65 ? 'high' : scorePct >= 35 ? 'mid' : 'low';
+      const displayText = terms && terms.length ? highlightKw(c.text, terms) : esc(c.text);
+      const shareIdx = window._resultShareData.length;
+      window._resultShareData.push({ text: c.text, title: c.bookTitle, author: c.bookAuthor, bookRaw: c.bookRaw });
+      html += `<div class="h-card ${cls}" style="animation-delay:${globalIdx*0.02}s">
+        <div class="h-card-header">
           <span class="h-book">${esc(c.bookTitle)}</span>
-          ${c.year ? `<span class="h-author">${c.year}</span>` : ''}
-          <span class="h-scores">
-            ${alpha > 0.1 ? `<span class="score-pill score-sem">sem ${semPct}%</span>` : ''}
-            ${alpha < 0.9 ? `<span class="score-pill score-kw">kw ${kwPct}%</span>` : ''}
-            <span class="score-pill score-hybrid">↔ ${hybPct}%</span>
-          </span>
+          ${c.bookAuthor ? `<span class="h-by"> by </span><span class="h-author">${esc(c.bookAuthor)}</span>` : ''}
         </div>
+        <div class="h-text" style="font-size:${hlFontSize}rem">${displayText}</div>
+        <div class="h-meta">
+          ${scorePct > 0 ? `<span class="h-scores"><span class="score-pill">${scorePct}%</span></span>` : ''}
+        </div>
+        <button class="h-share-btn" onclick="shareResult(${shareIdx})" title="Compartir en X">𝕏</button>
+        ${copyClipButton(c)}
+        ${deleteClipButton(c)}
       </div>`;
+      globalIdx++;
     });
   });
 
@@ -687,23 +1321,83 @@ window.renderResults = function(terms) {
   window.scrollTo(0, 0);
 };
 
+window.openSearchBook = function(index) {
+  const target = window._searchBookData?.[index];
+  if (!target) return;
+  for (let ci = 0; ci < CAT_ORDER.length; ci++) {
+    const bi = (LIBRARY[CAT_ORDER[ci]] || []).findIndex(book => book.raw === target.raw);
+    if (bi >= 0) return showBook(ci, bi);
+  }
+};
+
+window.searchAuthorResult = function(index) {
+  const target = window._searchAuthorData?.[index];
+  if (!target) return;
+  document.getElementById('search-input').value = target.author;
+  searchScope = 'books';
+  doSearch();
+};
+
 // ── Keyword highlight ──
 function highlightKw(text, terms) {
   let result = esc(text);
+  const vowelMap = { a:'[aáàâäã]', e:'[eéèêë]', i:'[iíìîï]', o:'[oóòôöõ]', u:'[uúùûü]' };
   terms.forEach(t => {
-    const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const pattern = t.split('').map(c => vowelMap[c] || c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
+    const re = new RegExp(`(${pattern})`, 'gi');
     result = result.replace(re, '<mark>$1</mark>');
   });
   return result;
 }
 
-window.goPage = function(p) { currentPage = p; const terms = document.getElementById('search-input').value.trim().toLowerCase().split(/\s+/).filter(t => t.length >= 2); renderResults(terms); };
-window.qs = function(q) { document.getElementById('search-input').value = q; doSearch(); };
+window.goPage = function(p) {
+  currentPage = p;
+  const query = parseUnifiedQuery(document.getElementById('search-input').value.trim()).cleanQuery;
+  const terms = parseSearchQuery(query).highlights;
+  renderResults(terms);
+};
 
-window.updateHybridLabel = function() {
-  const v = parseInt(document.getElementById('hybrid-slider').value);
-  const label = v <= 10 ? 'Solo keywords' : v <= 30 ? 'Más keywords' : v <= 45 ? 'Levemente keywords' : v <= 55 ? 'Equilibrado' : v <= 70 ? 'Levemente semántico' : v <= 90 ? 'Más semántico' : 'Solo semántico';
-  document.getElementById('hybrid-mode-label').textContent = label;
+window.retryMissingCovers = function() {
+  // Limpia los null del caché para que se reintenten
+  let cleared = 0;
+  Object.keys(coverCache).forEach(k => {
+    if (coverCache[k] === null) { delete coverCache[k]; cleared++; }
+  });
+  const btn = document.getElementById('retry-covers-btn');
+  if (btn) { btn.textContent = `↺ Reintentando ${cleared}...`; btn.disabled = true; }
+  scheduleCoverFetch();
+  // Re-enable button after queue drains (check every 3s)
+  const check = setInterval(() => {
+    if (!_coverBusy) {
+      clearInterval(check);
+      updateRetryBtn();
+      if (btn) btn.disabled = false;
+    }
+  }, 3000);
+};
+
+function updateRetryBtn() {
+  const btn = document.getElementById('retry-covers-btn');
+  if (!btn) return;
+  const missing = Object.values(coverCache).filter(v => v === null).length;
+  if (missing > 0) {
+    btn.style.display = 'inline-block';
+    btn.textContent = `↺ Reintentar tapas (${missing})`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+window.setClipFontSize = function(size) {
+  clipFontSize = parseFloat(size);
+  localStorage.setItem('clipFontSize', clipFontSize);
+  document.querySelectorAll('.clip-item').forEach(el => el.style.fontSize = clipFontSize + 'rem');
+};
+
+window.setHlFontSize = function(size) {
+  hlFontSize = parseFloat(size);
+  localStorage.setItem('hlFontSize', hlFontSize);
+  document.querySelectorAll('.h-text').forEach(el => el.style.fontSize = hlFontSize + 'rem');
 };
 
 document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
@@ -726,15 +1420,574 @@ const CAT_ORDER = [
 ];
 const clipPages = {};
 
-window.switchTab = function(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', (tab==='search'&&i===0)||(tab==='library'&&i===1));
+// ── Categorización dinámica ──────────────────────────────────
+const CAT_KEYWORDS = {
+  'IA · Tecnología · Digital':            ['inteligencia artificial','machine learning','deep learning','neural network','algoritmo','software','programación','código','digital','robot','automatización','big data','silicon','computación','openai','chatgpt','blockchain','crypto','internet','redes sociales','social media','artificial intelligence','data science','technology','tecnología'],
+  'Economía · Finanzas · Conducta':       ['economía','economica','finanza','dinero','mercado','inversión','capitalismo','inflación','banco','bolsa','keynes','monetar','fiscal','pib','gdp','recesión','riqueza','pobreza','comercio','capital','wealth','money','finance','economic','market','trading'],
+  'Futuro · Humanidad · Filosofía':       ['futuro','humanidad','filosofía','filosófico','existencia','civilización','posthumano','singularidad','transhumanismo','nietzsche','heidegger','kant','platón','ética','moral','metafísica','epistemología','utopía','distopía','sapiens','homo','future','humanity','philosophy'],
+  'Neurociencia · Psicología · Conducta': ['neurociencia','psicología','psicológico','cerebro','mente','cognitivo','conducta','comportamiento','sesgo','bias','memoria','emoción','inconsciente','freud','jung','dopamina','serotonina','trauma','terapia','mindfulness','meditación','felicidad','bienestar','brain','mind','cognitive','psychology','habit','hábito','motivation','motivación'],
+  'Creatividad · Innovación · Liderazgo': ['creatividad','creativo','innovación','innovador','liderazgo','líder','emprendimiento','emprendedor','startup','diseño','design','arte','artista','inspiración','imaginación','talento','mentor','coaching','creativity','innovation','leadership','entrepreneur','genius'],
+  'Salud · Biología · Pandemia':          ['salud','biología','biológico','pandemia','medicina','médico','virus','bacteria','cáncer','genética','gen','adn','dna','covid','epidemia','vacuna','alimentación','nutrición','dieta','ejercicio','longevidad','envejecimiento','célula','health','biology','pandemic','medicine','disease','body','immune'],
+  'Marketing · Comunicación · Persuasión':['marketing','comunicación','persuasión','publicidad','marca','brand','ventas','storytelling','narrativa','discurso','retórica','influencia','audiencia','cliente','consumidor','posicionamiento','copywriting','advertising','sales','influence','persuasion','communication'],
+  'Sociedad · Política · Historia':       ['sociedad','política','político','historia','histórico','democracia','gobierno','guerra','nación','revolución','cultura','identidad','raza','género','feminismo','colonialismo','globalización','imperialismo','society','politics','history','democracy','government','war','culture'],
+  'Sistemas · Complejidad · Ciencia':     ['sistemas','complejidad','complejo','network','emergencia','física','matemáticas','ciencia','científico','teoría','caos','entropía','evolución','darwin','quantum','cuántica','estadística','complexity','science','physics','math','evolution','theory','system'],
+  'Privacidad · Seguridad · Poder':       ['privacidad','seguridad','vigilancia','datos personales','hacking','hack','ciberataque','espionaje','nsa','cia','snowden','cifrado','anonimato','censura','privacy','surveillance','security','power','control','spy'],
+};
+
+function categorizeBook(title, author) {
+  const text = ((title || '') + ' ' + (author || '')).toLowerCase();
+  let best = null, bestScore = 0;
+  for (const [cat, keywords] of Object.entries(CAT_KEYWORDS)) {
+    let score = 0;
+    keywords.forEach(kw => { if (text.includes(kw.toLowerCase())) score += kw.length; });
+    if (score > bestScore) { bestScore = score; best = cat; }
+  }
+  return best || 'Sociedad · Política · Historia';
+}
+
+function buildLibraryFromClippings() {
+  const bookMap = {};
+  // Fuente primaria: allClippings (sin cap por libro)
+  allClippings.forEach(c => {
+    if (isHidden(c.bookRaw)) return;
+    if (!bookMap[c.bookRaw]) bookMap[c.bookRaw] = { raw: c.bookRaw, t: c.bookTitle || c.bookRaw, a: c.bookAuthor || '', clips: [] };
+    bookMap[c.bookRaw].clips.push({ text: c.text, date: c.highlightDate || null });
   });
-  document.getElementById('search-content').style.display = tab==='search' ? 'block' : 'none';
-  document.getElementById('screen-library').style.display = tab==='library' ? 'block' : 'none';
+  // Garantía de consistencia: cualquier libro buscable debe aparecer en Biblioteca
+  clippings.forEach(c => {
+    if (isHidden(c.bookRaw)) return;
+    if (!bookMap[c.bookRaw]) {
+      bookMap[c.bookRaw] = { raw: c.bookRaw, t: c.bookTitle || c.bookRaw, a: c.bookAuthor || '', clips: [{ text: c.text, date: c.highlightDate || null }] };
+    }
+  });
+  const lib = {};
+  Object.values(bookMap).forEach(book => {
+    // Oldest highlights first. Entries without a usable date are kept last.
+    book.clips.sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return Date.parse(a.date) - Date.parse(b.date);
+    });
+    const cat = categorizeBook(book.t, book.a);
+    if (!lib[cat]) lib[cat] = [];
+    lib[cat].push({ raw: book.raw, t: book.t, a: book.a, k: book.clips.length, c: book.clips.map(c => c.text) });
+  });
+  Object.values(lib).forEach(books => books.sort((a, b) => b.k - a.k));
+  return lib;
+}
+
+// ── Layout: sidebar + main, no padding-top needed ──
+function fixLayout() { /* sidebar layout: no padding-top needed */ }
+
+window.switchTab = function(tab) {
+  document.getElementById('nav-search')?.classList.toggle('active', tab === 'search');
+  document.getElementById('nav-library')?.classList.toggle('active', tab === 'library');
+  document.getElementById('search-content').style.display = tab === 'search' ? 'block' : 'none';
+  document.getElementById('screen-library').style.display = tab === 'library' ? 'block' : 'none';
+  if (tab === 'library' && Object.keys(LIBRARY).length > 0) {
+    setTimeout(scheduleCoverFetch, 50);
+  }
+};
+
+function populateSidebarBooks() {
+  const list = document.getElementById('sidebar-book-list');
+  if (!list) return;
+
+  // Contar highlights por libro desde allClippings
+  const counts = {};
+  const bookMeta = {}; // bookRaw → { title, author }
+  allClippings.forEach(c => {
+    counts[c.bookRaw] = (counts[c.bookRaw] || 0) + 1;
+    if (!bookMeta[c.bookRaw]) bookMeta[c.bookRaw] = { title: c.bookTitle, author: c.bookAuthor };
+  });
+
+  // Agrupar libros por categoría (mismo sistema que Biblioteca)
+  const grouped = {}; // cat → [bookRaw]
+  Object.keys(counts).forEach(raw => {
+    const { title, author } = bookMeta[raw];
+    const cat = bookCategoryOverrides[raw] || categorizeBook(title, author);
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(raw);
+  });
+
+  // Ordenar libros dentro de cada categoría alfabéticamente
+  Object.values(grouped).forEach(arr => arr.sort((a, b) => a.localeCompare(b, 'es')));
+
+  // Usar CAT_ORDER para ordenar categorías, añadir "Otros" al final si existe
+  const orderedCats = CAT_ORDER.filter(c => grouped[c]);
+  if (grouped['Otros']) orderedCats.push('Otros');
+
+  let html = '';
+  orderedCats.forEach((cat, ci) => {
+    const books = grouped[cat];
+    const catId = 'sbcat-' + ci;
+    html += `<div class="sidebar-cat-header" onclick="toggleSidebarCat('${catId}')">
+      <span class="sidebar-cat-label">${esc(cat)}</span>
+      <span class="sidebar-cat-arrow" id="${catId}-arrow">▾</span>
+    </div>
+    <div class="sidebar-cat-books" id="${catId}">`;
+    books.forEach(raw => {
+      const m = raw.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      const title = m ? m[1].trim() : raw;
+      html += `<button class="sidebar-book-item" data-book="${esc(raw)}" onclick="filterByBook(this.dataset.book)">
+        <span class="sidebar-book-name" title="${esc(raw)}">${esc(title)}</span>
+        <span class="sidebar-book-count">${counts[raw]}</span>
+      </button>`;
+    });
+    html += `</div>`;
+  });
+
+  list.innerHTML = html;
+}
+
+window.toggleSidebarCat = function(catId) {
+  const wrap = document.getElementById(catId);
+  const arrow = document.getElementById(catId + '-arrow');
+  if (!wrap) return;
+  const collapsed = wrap.style.display === 'none';
+  wrap.style.display = collapsed ? 'block' : 'none';
+  if (arrow) arrow.classList.toggle('collapsed', !collapsed);
+};
+
+window.reassignBookCat = function(newCat) {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw || !newCat) return;
+  bookCategoryOverrides[bookRaw] = newCat;
+  try { localStorage.setItem('bookCategoryOverrides', JSON.stringify(bookCategoryOverrides)); } catch(e) {}
+  populateSidebarBooks();
+  renderLibrary();
+};
+
+// ── Sidebar resize ─────────────────────────────────────────────────────────
+(function() {
+  const handle = document.getElementById('sidebar-resize-handle');
+  const sidebar = document.getElementById('sidebar');
+  if (!handle || !sidebar) return;
+  // Restore saved width
+  const saved = localStorage.getItem('sidebarWidth');
+  if (saved) sidebar.style.width = saved + 'px';
+  let dragging = false;
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    e.preventDefault();
+    sidebar.style.transition = 'none'; // sin animación mientras se arrastra
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const w = Math.max(180, Math.min(460, e.clientX));
+    sidebar.style.width = w + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    sidebar.style.transition = '';
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    localStorage.setItem('sidebarWidth', parseInt(sidebar.style.width));
+  });
+})();
+
+// ── Sidebar colapsable ───────────────────────────────────────────────────────
+(function() {
+  const sidebar = document.getElementById('sidebar');
+  const handle = document.getElementById('sidebar-resize-handle');
+  const expandBtn = document.getElementById('sidebar-expand-btn');
+  if (!sidebar) return;
+  if (localStorage.getItem('sidebarCollapsed') === '1') {
+    sidebar.classList.add('collapsed');
+    if (handle) handle.style.display = 'none';
+    if (expandBtn) expandBtn.style.display = 'flex';
+  }
+})();
+
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const handle = document.getElementById('sidebar-resize-handle');
+  const expandBtn = document.getElementById('sidebar-expand-btn');
+  if (!sidebar) return;
+  const collapsed = sidebar.classList.toggle('collapsed');
+  if (handle) handle.style.display = collapsed ? 'none' : '';
+  if (expandBtn) expandBtn.style.display = collapsed ? 'flex' : 'none';
+  try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch(e) {}
+};
+
+// ── Tema claro/oscuro ─────────────────────────────────────────────────────────
+window.toggleTheme = function() {
+  const isDark = document.documentElement.classList.toggle('dark-theme');
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = isDark ? '☀' : '🌙';
+  try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
+};
+(function() {
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = document.documentElement.classList.contains('dark-theme') ? '☀' : '🌙';
+})();
+
+// ── BOOK THEMES ─────────────────────────────────────────────────────────────
+
+function clipKey(c) {
+  // Clave estable para persistencia: primeros 80 chars normalizados
+  return normTxt(c.text).slice(0, 80).replace(/\s+/g, ' ').trim();
+}
+
+function saveBookThemes(bookRaw, data) {
+  bookThemesStore[bookRaw] = data;
+  try { localStorage.setItem('bookThemes', JSON.stringify(bookThemesStore)); } catch(e) {}
+}
+
+function autoClusterClips(clips) {
+  const N = clips.length;
+  if (N < 4) {
+    return { themes: ['Highlights'], assignments: Object.fromEntries(clips.map(c => [clipKey(c), 0])) };
+  }
+
+  const STOP = new Set(['el','la','los','las','un','una','de','del','en','que','es','son',
+    'esta','estan','ser','se','su','sus','lo','le','les','con','por','para','yo','o',
+    'pero','si','como','mas','tambien','ya','cuando','donde','aunque','porque',
+    'esto','este','estos','estas','todo','toda','todos','todas','muy','ha','han',
+    'hay','tiene','tienen','puede','pueden','hacer','no','ni','cada','otro','otra',
+    'mismo','misma','al','fue','era','eran','entre','sobre','hacia','hasta','desde',
+    'sin','tras','nos','te','me','mi','tu','qué','como','solo','bien','vez','asi',
+    'the','and','that','this','are','with','for','from','have','has','not','they',
+    'what','which','who','will','can','but','more','also','its','any','all','would',
+    'been','these','than','so','do','just','into','our','some','most','by','it',
+    'he','she','we','you','my','his','her','their','an','be','is','was','were','or',
+    'at','as','if','of','to','in','on','had','there','him','them','then','when',
+    'one','two','even','such','way','make','made','time','know','think','people']);
+
+  // Tokenize y calcular frecuencia de documentos
+  const tokenized = clips.map(c =>
+    normTxt(c.text).split(/\W+/).filter(w => w.length > 3 && !STOP.has(w))
+  );
+  const df = {};
+  tokenized.forEach(words => {
+    new Set(words).forEach(w => { df[w] = (df[w] || 0) + 1; });
+  });
+
+  // Palabras discriminantes: aparecen en 2–40% de clips
+  const vocab = Object.entries(df)
+    .filter(([, f]) => f >= 2 && f / N <= 0.4)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 60)
+    .map(([w]) => w);
+
+  if (vocab.length < 3) {
+    return { themes: ['Highlights'], assignments: Object.fromEntries(clips.map(c => [clipKey(c), 0])) };
+  }
+
+  const K = Math.max(2, Math.min(5, Math.ceil(N / 8)));
+
+  // Vectores binarios por clip
+  const vectors = tokenized.map(words => {
+    const s = new Set(words);
+    return vocab.map(w => s.has(w) ? 1 : 0);
+  });
+
+  // Inicializar centroides: picks distintos y dispersos
+  const dotScore = vectors.map(v => v.reduce((a, b) => a + b, 0));
+  const sorted = [...Array(N).keys()].sort((a, b) => dotScore[b] - dotScore[a]);
+  const seeds = [sorted[0]];
+  while (seeds.length < K && seeds.length < N) {
+    let bestIdx = -1, bestMinSim = Infinity;
+    for (let i = 0; i < N; i++) {
+      if (seeds.includes(i)) continue;
+      const minSim = Math.min(...seeds.map(s => {
+        const normA = Math.sqrt(vectors[i].reduce((a, b) => a + b * b, 0)) || 1;
+        const normB = Math.sqrt(vectors[s].reduce((a, b) => a + b * b, 0)) || 1;
+        const dot = vectors[i].reduce((acc, v, j) => acc + v * vectors[s][j], 0);
+        return dot / (normA * normB);
+      }));
+      if (minSim < bestMinSim) { bestMinSim = minSim; bestIdx = i; }
+    }
+    if (bestIdx === -1) break;
+    seeds.push(bestIdx);
+  }
+
+  let centroids = seeds.map(i => [...vectors[i]]);
+
+  // K-means: 6 iteraciones
+  let assignArr = new Array(N).fill(0);
+  for (let iter = 0; iter < 6; iter++) {
+    assignArr = vectors.map(v => {
+      let best = 0, bestSim = -Infinity;
+      centroids.forEach((cent, ci) => {
+        const nv = Math.sqrt(v.reduce((a, b) => a + b * b, 0)) || 1;
+        const nc = Math.sqrt(cent.reduce((a, b) => a + b * b, 0)) || 1;
+        const sim = v.reduce((acc, x, j) => acc + x * cent[j], 0) / (nv * nc);
+        if (sim > bestSim) { bestSim = sim; best = ci; }
+      });
+      return best;
+    });
+    const newC = Array.from({length: K}, () => new Array(vocab.length).fill(0));
+    const cnt = new Array(K).fill(0);
+    vectors.forEach((v, i) => { v.forEach((x, j) => { newC[assignArr[i]][j] += x; }); cnt[assignArr[i]]++; });
+    centroids = newC.map((c, i) => cnt[i] > 0 ? c.map(v => v / cnt[i]) : c);
+  }
+
+  // Nombrar grupos por top palabras
+  const wscores = Array.from({length: K}, () => ({}));
+  clips.forEach((c, i) => {
+    const ti = assignArr[i];
+    new Set(tokenized[i]).forEach(w => {
+      if (vocab.includes(w)) wscores[ti][w] = (wscores[ti][w] || 0) + 1;
+    });
+  });
+  const themes = wscores.map((ws, ti) => {
+    const top = Object.entries(ws).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([w]) => w[0].toUpperCase() + w.slice(1));
+    return top.join(' · ') || `Grupo ${ti + 1}`;
+  });
+
+  const assignments = Object.fromEntries(clips.map((c, i) => [clipKey(c), assignArr[i]]));
+  return { themes, assignments };
+}
+
+function getOrCreateThemes(bookRaw, clips) {
+  if (bookThemesStore[bookRaw]) return bookThemesStore[bookRaw];
+  const data = autoClusterClips(clips);
+  saveBookThemes(bookRaw, data);
+  return data;
+}
+
+function renderBookBrowseWithThemes(bookRaw, bookClips) {
+  const data = getOrCreateThemes(bookRaw, bookClips);
+  const { themes, assignments } = data;
+
+  // Agrupar clips por tema
+  const groups = Array.from({length: themes.length}, () => []);
+  const unassigned = [];
+  bookClips.forEach(c => {
+    const ti = assignments[clipKey(c)];
+    (ti !== undefined && ti >= 0 && ti < themes.length ? groups[ti] : unassigned).push(c);
+  });
+
+  const allThemes = unassigned.length > 0 ? [...themes, 'Sin clasificar'] : [...themes];
+  if (unassigned.length > 0) groups.push(unassigned);
+
+  window._resultShareData = [];
+  const accentLine = ['#0a0a0a','#444','#777','#aaa','#ccc','#888'];
+
+  let html = `<div class="theme-toolbar">
+    <button class="theme-toolbar-btn" onclick="reClusterBook()">↺ Reagrupar automático</button>
+    <button class="theme-toolbar-btn" onclick="addTheme()">+ Nuevo grupo</button>
+  </div>`;
+
+  allThemes.forEach((themeName, ti) => {
+    const tclips = groups[ti] || [];
+    const isExtra = ti >= themes.length; // "Sin clasificar"
+    const color = accentLine[ti % accentLine.length];
+
+    html += `<div class="theme-section">
+      <div class="theme-header" onclick="toggleThemeSection(${ti})">
+        <div style="width:3px;height:15px;background:${color};border-radius:2px;flex-shrink:0"></div>
+        <span class="theme-name-display" id="tname-${ti}">${esc(themeName)}</span>
+        <span class="theme-count-badge">${tclips.length}</span>`;
+    if (!isExtra) {
+      html += `<button class="theme-edit-btn" onclick="event.stopPropagation();startRenameTheme(${ti})" title="Renombrar">✎</button>
+               <button class="theme-del-btn" onclick="event.stopPropagation();deleteTheme(${ti})" title="Eliminar">×</button>`;
+    }
+    html += `<span class="theme-toggle-icon" id="tarrow-${ti}">▾</span>
+      </div>
+      <div class="theme-clips-wrap" id="tclips-${ti}">`;
+
+    tclips.forEach((c, idx) => {
+      const shareIdx = window._resultShareData.length;
+      const ck = clipKey(c);
+      window._resultShareData.push({ text: c.text, title: c.bookTitle, author: c.bookAuthor, bookRaw: c.bookRaw });
+
+      const chipsHtml = allThemes.map((tn, tni) =>
+        `<span class="theme-chip${tni === ti ? ' active' : ''}" onclick='moveClipToTheme(${JSON.stringify(ck)},${tni})'>${esc(tn)}</span>`
+      ).join('');
+
+      html += `<div class="h-card low" style="animation-delay:${Math.min(idx, 25) * 0.012}s">
+        <div class="h-text" style="font-size:${hlFontSize}rem">${esc(c.text)}</div>
+        <div class="h-theme-chips">${chipsHtml}</div>
+        <button class="h-share-btn" onclick="shareResult(${shareIdx})" title="Compartir en X">𝕏</button>
+        ${copyClipButton(c)}
+        ${deleteClipButton(c)}
+      </div>`;
+    });
+
+    if (tclips.length === 0) {
+      html += `<div style="padding:0.7rem 0 0.3rem;font-size:0.78rem;color:var(--ink-3);font-style:italic">Sin highlights en este grupo.</div>`;
+    }
+    html += `</div></div>`;
+  });
+
+  return html;
+}
+
+// ── Controles de temáticas ───────────────────────────────────
+
+window.toggleThemeSection = function(ti) {
+  const clips = document.getElementById('tclips-' + ti);
+  const arrow = document.getElementById('tarrow-' + ti);
+  if (!clips) return;
+  const hidden = clips.style.display === 'none';
+  clips.style.display = hidden ? 'block' : 'none';
+  if (arrow) arrow.classList.toggle('collapsed', !hidden);
+};
+
+window.startRenameTheme = function(ti) {
+  const nameEl = document.getElementById('tname-' + ti);
+  if (!nameEl) return;
+  const cur = nameEl.textContent;
+  nameEl.outerHTML = `<input id="tname-${ti}" class="theme-name-input" value="${esc(cur)}"
+    onblur='saveRenameTheme(${ti},this.value)'
+    onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')this.blur()"
+    onclick="event.stopPropagation()">`;
+  setTimeout(() => document.getElementById('tname-' + ti)?.select(), 10);
+};
+
+window.saveRenameTheme = function(ti, newName) {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw || !bookThemesStore[bookRaw]) return;
+  const name = newName.trim();
+  if (name) bookThemesStore[bookRaw].themes[ti] = name;
+  saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
+  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
+};
+
+window.moveClipToTheme = function(ck, newTi) {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw || !bookThemesStore[bookRaw]) return;
+  bookThemesStore[bookRaw].assignments[ck] = newTi;
+  saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
+  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
+};
+
+window.addTheme = function() {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw || !bookThemesStore[bookRaw]) return;
+  bookThemesStore[bookRaw].themes.push('Nuevo grupo');
+  saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
+  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
+  // Auto-abrir rename en el nuevo grupo
+  const newIdx = bookThemesStore[bookRaw].themes.length - 1;
+  setTimeout(() => startRenameTheme(newIdx), 50);
+};
+
+window.deleteTheme = function(ti) {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw || !bookThemesStore[bookRaw]) return;
+  const data = bookThemesStore[bookRaw];
+  if (data.themes.length <= 1) return;
+  // Mover clips del grupo eliminado al primero disponible
+  const fallback = ti === 0 ? 1 : 0;
+  Object.keys(data.assignments).forEach(ck => {
+    if (data.assignments[ck] === ti) data.assignments[ck] = fallback > ti ? fallback - 1 : fallback;
+    else if (data.assignments[ck] > ti) data.assignments[ck]--;
+  });
+  data.themes.splice(ti, 1);
+  saveBookThemes(bookRaw, data);
+  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
+};
+
+window.reClusterBook = function() {
+  const bookRaw = window._activeBrowseBook;
+  if (!bookRaw) return;
+  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const data = autoClusterClips(clips);
+  saveBookThemes(bookRaw, data);
+  document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
+};
+
+window.filterByBook = function(bookRaw) {
+  // Limpiar búsqueda activa — el click en libro es siempre un "browse", no un filtro de search
+  currentResults = [];
+  _bookFilter = '';
+  document.getElementById('search-input').value = '';
+
+  // Actualizar sidebar activo
+  document.querySelectorAll('.sidebar-book-item, #sb-all').forEach(b => b.classList.remove('active'));
+  if (!bookRaw) {
+    document.getElementById('sb-all')?.classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar-book-item').forEach(b => {
+      if (b.dataset.book === bookRaw) b.classList.add('active');
+    });
+  }
+  currentPage = 1;
+  switchTab('search');
+
+  const hideBtn = document.getElementById('hide-book-btn');
+  const catSel = document.getElementById('book-cat-selector');
+
+  if (bookRaw) {
+    // Mostrar botón ocultar y guardar referencia al libro activo
+    if (hideBtn) hideBtn.style.display = 'inline-block';
+    window._activeBrowseBook = bookRaw;
+
+    // Poblar y mostrar el selector de categoría
+    if (catSel) {
+      const meta = allClippings.find(c => c.bookRaw === bookRaw);
+      const currentCat = bookCategoryOverrides[bookRaw] || categorizeBook(meta?.bookTitle, meta?.bookAuthor);
+      catSel.innerHTML = CAT_ORDER.map(c =>
+        `<option value="${esc(c)}"${c === currentCat ? ' selected' : ''}>${esc(c)}</option>`
+      ).join('');
+      catSel.style.display = 'inline-block';
+    }
+
+    // Mostrar TODOS los clips del libro desde allClippings (sin cap)
+    const bookClips = allClippings.filter(c => c.bookRaw === bookRaw);
+    const meta = bookClips[0] || {};
+    const displayTitle = meta.bookTitle || (bookRaw.match(/^(.+?)\s*\(/) ? bookRaw.match(/^(.+?)\s*\(/)[1].trim() : bookRaw);
+    const displayAuthor = meta.bookAuthor || '';
+    const mainTitle = document.querySelector('#search-content .main-title');
+    if (mainTitle) mainTitle.innerHTML = esc(displayTitle) + (displayAuthor ? `<span style="display:block;font-size:0.72rem;font-weight:400;color:var(--ink-3);margin-top:1px;letter-spacing:0">${esc(displayAuthor)}</span>` : '');
+    const resultCount = document.getElementById('result-count');
+    if (resultCount) resultCount.textContent = `${bookClips.length} highlight${bookClips.length !== 1 ? 's' : ''}`;
+    window._resultShareData = [];
+    let html = '';
+    bookClips.forEach((c, idx) => {
+      const shareIdx = window._resultShareData.length;
+      window._resultShareData.push({ text: c.text, title: c.bookTitle, author: c.bookAuthor, bookRaw: c.bookRaw });
+      html += `<div class="h-card low" style="animation-delay:${Math.min(idx, 30) * 0.015}s">
+        <div class="h-text" style="font-size:${hlFontSize}rem">${esc(c.text)}</div>
+        <button class="h-share-btn" onclick="shareResult(${shareIdx})" title="Compartir en X">𝕏</button>
+        ${copyClipButton(c)}
+        ${deleteClipButton(c)}
+      </div>`;
+    });
+    document.getElementById('results').innerHTML = html || '<div class="empty-state"><p>Sin highlights para este libro.</p></div>';
+  } else {
+    // "Todos": volver al estado inicial, ocultar botón y selector
+    if (hideBtn) hideBtn.style.display = 'none';
+    if (catSel) catSel.style.display = 'none';
+    window._activeBrowseBook = null;
+    const mainTitle = document.querySelector('#search-content .main-title');
+    if (mainTitle) mainTitle.innerHTML = 'Todos los highlights';
+    const resultCount = document.getElementById('result-count');
+    if (resultCount) resultCount.textContent = '';
+    document.getElementById('results').innerHTML = `<div class="empty-state">
+      <p class="big">¿Qué querés encontrar?</p>
+      <p>Escribí cualquier idea en el buscador, o seleccioná un libro a la izquierda.</p>
+    </div>`;
+  }
 };
 
 window.renderLibrary = function() {
+  // Reconstruir desde clippings cargados
+  const hasData = allClippings.length > 0 || clippings.length > 0;
+  console.log('[Biblioteca] renderLibrary — allClippings:', allClippings.length, '· clippings:', clippings.length, '· hasData:', hasData);
+  if (hasData) {
+    try {
+      const dynLib = buildLibraryFromClippings();
+      const cats = Object.keys(dynLib);
+      const totalBooks = cats.reduce((s, k) => s + dynLib[k].length, 0);
+      console.log('[Biblioteca] buildLibrary → cats:', cats.length, '· libros:', totalBooks, cats.map(k => k + '=' + dynLib[k].length).join(', '));
+      Object.keys(LIBRARY).forEach(k => delete LIBRARY[k]);
+      Object.assign(LIBRARY, dynLib);
+    } catch(e) {
+      console.error('[Biblioteca] Error en buildLibraryFromClippings:', e);
+    }
+  }
   const wrap = document.getElementById('lib-content');
   let html = '';
   CAT_ORDER.forEach((cat, ci) => {
@@ -745,7 +1998,7 @@ window.renderLibrary = function() {
     html += '<div class="cat-section" id="cat-'+ci+'">' +
       '<div class="cat-header" onclick="toggleCat('+ci+')">' +
         '<span class="cat-icon">'+meta.icon+'</span>' +
-        '<span class="cat-name" style="color:'+meta.color+'">'+esc(cat)+'</span>' +
+        '<span class="cat-name">'+esc(cat)+'</span>' +
         '<span class="cat-count">'+books.length+' libros · '+totalClips.toLocaleString()+' subrayados</span>' +
         '<span class="cat-arrow open" id="arrow-'+ci+'">▶</span>' +
       '</div>' +
@@ -753,11 +2006,20 @@ window.renderLibrary = function() {
         '<div class="book-grid">' +
           books.map((b,bi) =>
             '<div class="book-card-lib" id="bcard-'+ci+'-'+bi+'" ' +
-            'style="border-left-color:'+meta.color+'" ' +
             'onclick="showBook('+ci+','+bi+')">' +
-              '<div class="book-title-lib">'+esc(b.t)+'</div>' +
-              '<div class="book-author-lib">'+esc(b.a)+'</div>' +
-              '<div class="book-count-lib">'+b.k+' subrayados</div>' +
+              '<div style="height:200px;background:var(--paper-2);overflow:hidden;border-radius:3px 3px 0 0;position:relative">' +
+                '<div id="cover-ph-'+ci+'-'+bi+'" class="cover-skeleton"></div>' +
+                '<img id="cover-'+ci+'-'+bi+'" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover" alt="">' +
+                '<div class="cover-actions">' +
+                  '<button class="cover-action-btn" onclick="searchBookCover('+ci+','+bi+',event)" title="Buscar esta portada en Google Imágenes">⌕ Buscar</button>' +
+                  '<button class="cover-action-btn" onclick="chooseBookCover('+ci+','+bi+',event)" title="Elegir una imagen guardada">↑ Elegir</button>' +
+                '</div>' +
+              '</div>' +
+              '<div style="padding:0.7rem 0.85rem 0.8rem">' +
+                '<div class="book-title-lib">'+esc(b.t)+'</div>' +
+                '<div class="book-author-lib">'+esc(b.a)+'</div>' +
+                '<div class="book-count-lib">'+b.k+' subrayados</div>' +
+              '</div>' +
             '</div>'
           ).join('') +
         '</div>' +
@@ -765,31 +2027,47 @@ window.renderLibrary = function() {
       '</div>' +
     '</div>';
   });
+  if (!html) {
+    const libKeys = Object.keys(LIBRARY);
+    const diagInfo = libKeys.length > 0
+      ? `${libKeys.length} categorías con ${libKeys.reduce((s,k)=>s+LIBRARY[k].length,0)} libros en total`
+      : 'LIBRARY vacío';
+    console.warn('[Biblioteca] html vacío —', diagInfo, '· allClippings:', allClippings.length, '· clippings:', clippings.length);
+    if (!hasData) {
+      html = '<div class="empty-state" style="padding:3rem 0"><p class="big">Cargá tu biblioteca primero</p><p>La pestaña Biblioteca estará disponible<br>una vez que cargues tu archivo.</p></div>';
+    } else {
+      // Tenemos data pero library está vacía — mostrar diagnóstico
+      html = '<div class="empty-state" style="padding:3rem 0"><p class="big">Sin libros para mostrar</p>' +
+        '<p>' + allClippings.length + ' clips cargados · ' + diagInfo + '<br>' +
+        'Abrí la consola del browser (Cmd+Option+I) para ver detalles.</p></div>';
+    }
+  }
   wrap.innerHTML = html;
+  scheduleCoverFetch();
 };
 
 window.toggleCat = function(ci) {
   const el = document.getElementById('books-'+ci);
   const arrow = document.getElementById('arrow-'+ci);
-  const isHidden = el.style.display === 'none';
-  el.style.display = isHidden ? 'block' : 'none';
-  arrow.classList.toggle('open', isHidden);
+  const isClosed = el.style.display === 'none';
+  el.style.display = isClosed ? 'block' : 'none';
+  arrow.classList.toggle('open', isClosed);
 };
 
 window.showBook = function(ci, bi) {
   const cat = CAT_ORDER[ci];
   const book = LIBRARY[cat] && LIBRARY[cat][bi];
   if (!book) return;
-  document.querySelectorAll('.book-card-lib.selected').forEach(el => el.classList.remove('selected'));
-  document.querySelectorAll('.book-detail.open').forEach(el => { el.classList.remove('open'); el.innerHTML=''; });
-  const card = document.getElementById('bcard-'+ci+'-'+bi);
-  if (card) card.classList.add('selected');
-  const detail = document.getElementById('detail-'+ci);
-  if (!detail) return;
-  detail.classList.add('open');
-  clipPages[ci+'-'+bi] = 1;
-  renderDetail(detail, book, ci, bi, '');
-  setTimeout(() => detail.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+  currentBookDetail = book;
+  bookDetailFilter = '';
+  clipPages['bkd'] = 1;
+  document.getElementById('bkd-title').textContent = book.t;
+  document.getElementById('bkd-author').textContent = book.a || '';
+  document.getElementById('bkd-search').value = '';
+  document.getElementById('bkd-font-slider').value = clipFontSize;
+  renderBookDetailClips('');
+  show('screen-book-detail');
+  window.scrollTo(0, 0);
 };
 
 window.renderDetail = function(el, book, ci, bi, filter) {
@@ -806,11 +2084,20 @@ window.renderDetail = function(el, book, ci, bi, filter) {
     '<span class="detail-title">'+esc(book.t)+'</span>' +
     '<span class="detail-author">'+esc(book.a)+'</span>' +
     '<span class="detail-count">'+clips.length+' subrayados</span>' +
+    '<div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">' +
+      '<span style="font-size:0.68rem;color:var(--ink-3);font-weight:400">A</span>' +
+      '<input type="range" min="0.75" max="1.4" step="0.05" value="'+clipFontSize+'" ' +
+        'style="width:58px;accent-color:var(--accent);cursor:pointer" ' +
+        'oninput="setClipFontSize(this.value)">' +
+      '<span style="font-size:1rem;color:var(--ink-3);font-weight:400">A</span>' +
+    '</div>' +
   '</div>' +
   '<input class="detail-search" placeholder="Filtrar en este libro..." value="'+esc(filter)+'" ' +
     'oninput="clipPages[\''+key+'\']= 1; ' +
     'renderDetail(document.getElementById(\'detail-'+ci+'\'),LIBRARY[CAT_ORDER['+ci+']]['+bi+'],'+ci+','+bi+',this.value)">' +
-  shown.map(c => '<div class="clip-item">'+hlFilter(c,filter)+'</div>').join('');
+  shown.map(c => '<div class="clip-item" style="font-size:'+clipFontSize+'rem">'+hlFilter(c,filter)+
+    copyClipButton({ text: c })+
+    deleteClipButton({ bookRaw: book.raw, text: c })+'</div>').join('');
 
   if (remaining > 0) {
     html += '<div class="clips-more" onclick="clipPages[\''+key+'\']++;' +
@@ -828,6 +2115,538 @@ function hlFilter(text, filter) {
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function tick() { return new Promise(r => setTimeout(r, 0)); }
+
+// ── Portadas de libros (Open Library API — sin key, sin rate limit) ─────────
+const coverCache = {};
+
+let _coverUploadTarget = null;
+
+window.searchBookCover = function(ci, bi, event) {
+  event?.stopPropagation();
+  const book = LIBRARY[CAT_ORDER[ci]]?.[bi];
+  if (!book) return;
+  const query = [book.t, book.a, 'portada libro'].filter(Boolean).join(' ');
+  window.open('https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query), '_blank', 'noopener');
+};
+
+window.chooseBookCover = function(ci, bi, event) {
+  event?.stopPropagation();
+  const book = LIBRARY[CAT_ORDER[ci]]?.[bi];
+  if (!book) return;
+  _coverUploadTarget = { title: book.t, author: book.a || '', ci, bi };
+  const input = document.getElementById('cover-file-input');
+  input.value = '';
+  input.click();
+};
+
+function compressCoverFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('El archivo no es una imagen compatible.'));
+      img.onload = () => {
+        const scale = Math.min(1, 700 / img.width, 1000 / img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.84));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('cover-file-input').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  const target = _coverUploadTarget;
+  if (!file || !target) return;
+  try {
+    const dataUrl = await compressCoverFile(file);
+    const key = (target.title + '|' + target.author).toLowerCase();
+    coverCache[key] = dataUrl;
+    await persistIndex();
+    // No redibujar toda la Biblioteca: si la búsqueda automática sigue activa,
+    // scheduleCoverFetch omite el nuevo DOM y la portada queda sin aplicar.
+    const imgEl = document.getElementById('cover-' + target.ci + '-' + target.bi);
+    const phEl = document.getElementById('cover-ph-' + target.ci + '-' + target.bi);
+    if (imgEl) showCoverImg(imgEl, phEl, dataUrl, key);
+  } catch(err) {
+    alert('No se pudo guardar la portada: ' + err.message);
+  } finally {
+    _coverUploadTarget = null;
+    e.target.value = '';
+  }
+});
+
+let _coverPersistTimer = null;
+function persistCoverCacheSoon() {
+  clearTimeout(_coverPersistTimer);
+  _coverPersistTimer = setTimeout(() => persistIndex(), 500);
+}
+
+function showCoverImg(el, ph, url, cacheKey) {
+  function reveal() {
+    el.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  }
+  el.onload  = reveal;
+  el.onerror = () => {
+    // Una URL rota no debe quedar guardada para siempre.
+    if (cacheKey && coverCache[cacheKey] === url) {
+      delete coverCache[cacheKey];
+      persistCoverCacheSoon();
+    }
+    el.style.display = 'none';
+    if (ph) ph.style.display = 'none';
+  };
+  el.src = url;
+  // Si el browser ya la tiene en caché, onload no dispara — forzar manualmente
+  if (el.complete && el.naturalWidth > 0) reveal();
+}
+
+function _fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
+const _norm = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
+async function _searchOL(params) {
+  const res = await _fetchWithTimeout('https://openlibrary.org/search.json?' + params.toString(), 10000);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function _findCoverId(docs, title) {
+  const words = _norm(title).split(' ').filter(w => w.length > 2);
+  for (const doc of docs) {
+    if (!doc.cover_i) continue;
+    if (words.length === 0) return doc.cover_i;
+    const matches = words.filter(w => _norm(doc.title || '').includes(w)).length;
+    if (matches / words.length >= 0.5) return doc.cover_i; // threshold bajado a 50%
+  }
+  return null;
+}
+
+// Normaliza solamente la consulta de portada; el título visible no cambia.
+// Ejemplos:
+//   "cuestion vital, La"                  → "La cuestion vital"
+//   "sociedad del cansancio (4a Ed.), La" → "La sociedad del cansancio"
+function cleanCoverTitle(title) {
+  let t = String(title || '')
+    .replace(/\s*\([^)]*\b(?:edicion|edición|ed\.?)\s*[^)]*\)\s*/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const inverted = t.match(/^(.+?),\s*(El|La|Los|Las|Un|Una)$/i);
+  if (inverted) t = inverted[2] + ' ' + inverted[1];
+  return t.trim();
+}
+
+async function fetchCover(title, author, ci, bi) {
+  const key = (title + '|' + (author || '')).toLowerCase();
+  const imgEl = document.getElementById('cover-' + ci + '-' + bi);
+  const phEl  = document.getElementById('cover-ph-' + ci + '-' + bi);
+  if (!imgEl) return;
+
+  // Ya cacheada — aplicar sin fetch
+  if (coverCache[key] !== undefined) {
+    if (coverCache[key]) showCoverImg(imgEl, phEl, coverCache[key], key);
+    else if (phEl) phEl.style.display = 'none';
+    return;
+  }
+
+  // Marcar como descarga activa (shimmer más rápido)
+  if (phEl) phEl.classList.add('active');
+
+  const searchTitle = cleanCoverTitle(title);
+  let coverId = null;
+  try {
+    // Intento 1: título + autor
+    const p1 = new URLSearchParams({ title: searchTitle, limit: 5, fields: 'cover_i,title' });
+    if (author) p1.set('author', author);
+    const d1 = await _searchOL(p1);
+    coverId = _findCoverId(d1.docs || [], searchTitle);
+
+    // Intento 2: solo título (si el primero no encontró nada)
+    if (!coverId && author) {
+      await new Promise(r => setTimeout(r, 600));
+      const p2 = new URLSearchParams({ title: searchTitle, limit: 8, fields: 'cover_i,title' });
+      const d2 = await _searchOL(p2);
+      coverId = _findCoverId(d2.docs || [], searchTitle);
+    }
+
+    // Intento 3: búsqueda genérica con q= (último recurso)
+    if (!coverId) {
+      await new Promise(r => setTimeout(r, 600));
+      const p3 = new URLSearchParams({ q: searchTitle.split(' ').slice(0,4).join(' '), limit: 5, fields: 'cover_i,title' });
+      const d3 = await _searchOL(p3);
+      coverId = _findCoverId(d3.docs || [], searchTitle);
+    }
+
+    const url = coverId ? 'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg' : null;
+    coverCache[key] = url;
+    // Guardar inmediatamente el resultado; antes solo vivía en memoria y se
+    // perdía al cerrar la página o si el índice ya se había autoguardado.
+    persistCoverCacheSoon();
+    if (url) showCoverImg(imgEl, phEl, url, key);
+    else if (phEl) phEl.style.display = 'none';
+  } catch(err) {
+    console.warn('Cover fetch failed for "' + title + '":', err.message);
+    // No guardar null — que lo reintente la próxima vez
+    if (phEl) phEl.style.display = 'none';
+  }
+}
+
+// Queue de portadas — procesa una a la vez con 800ms entre requests
+let _coverQueue = [];
+let _coverBusy  = false;
+let _coverObserver = null;
+
+async function _processCoverQueue() {
+  if (_coverBusy) return;
+  _coverBusy = true;
+  try {
+    while (_coverQueue.length > 0) {
+      const { title, author, ci, bi } = _coverQueue.shift();
+      await fetchCover(title, author, ci, bi);
+      if (_coverQueue.length > 0) await new Promise(r => setTimeout(r, 1200));
+    }
+  } catch(e) {
+    console.warn('Error en cola de tapas:', e);
+  } finally {
+    _coverBusy = false;
+    // Asegurar que la última tapa de la cola también quede persistida.
+    await persistIndex();
+    updateRetryBtn();
+  }
+}
+
+function scheduleCoverFetch() {
+  if (_coverBusy) return; // ya hay una cola procesándose
+  _coverQueue = [];
+
+  let cached = 0, pending = 0, total = 0;
+
+  CAT_ORDER.forEach((cat, ci) => {
+    (LIBRARY[cat] || []).forEach((b, bi) => {
+      total++;
+      const key = (b.t + '|' + (b.a || '')).toLowerCase();
+      const imgEl = document.getElementById('cover-' + ci + '-' + bi);
+      const phEl  = document.getElementById('cover-ph-' + ci + '-' + bi);
+
+      if (coverCache[key] !== undefined) {
+        // Ya cacheada — aplicar directo sin fetch
+        if (coverCache[key] && imgEl) {
+          showCoverImg(imgEl, phEl, coverCache[key], key);
+        } else {
+          if (phEl) phEl.style.display = 'none';
+        }
+        cached++;
+        return;
+      }
+
+      // Encolar para fetch
+      _coverQueue.push({ title: b.t, author: b.a || '', ci, bi });
+      pending++;
+    });
+  });
+
+  console.log(`Tapas: ${cached} cacheadas, ${pending} a buscar, ${total} total`);
+
+  if (_coverQueue.length === 0) {
+    updateRetryBtn();
+    return;
+  }
+  _processCoverQueue();
+}
+
+// ── Filtro de Biblioteca ─────────────────────────────────────
+window.filterLibrary = function(query) {
+  const q = normTxt(query);
+  document.querySelectorAll('.cat-section').forEach(section => {
+    let anyVisible = false;
+    section.querySelectorAll('.book-card-lib').forEach(card => {
+      if (!q) { card.style.display = ''; anyVisible = true; return; }
+      const title  = normTxt(card.querySelector('.book-title-lib')?.textContent  || '');
+      const author = normTxt(card.querySelector('.book-author-lib')?.textContent || '');
+      const matches = title.includes(q) || author.includes(q);
+      card.style.display = matches ? '' : 'none';
+      if (matches) anyVisible = true;
+    });
+    section.style.display = !q || anyVisible ? '' : 'none';
+  });
+};
+
+// ── Book detail full-page ────────────────────────────────────
+function renderBookDetailClips(filter) {
+  const book = currentBookDetail;
+  if (!book) return;
+  const PER = 30;
+  const page = clipPages['bkd'] || 1;
+  const clips = filter
+    ? book.c.filter(c => c.toLowerCase().includes(filter.toLowerCase()))
+    : book.c;
+  const shown = clips.slice(0, page * PER);
+  const remaining = clips.length - shown.length;
+
+  document.getElementById('bkd-stats').textContent =
+    clips.length + ' subrayado' + (clips.length !== 1 ? 's' : '');
+
+  let html = shown.map(c => {
+    const origIdx = book.c.indexOf(c);
+    return '<div class="clip-item" style="font-size:' + clipFontSize + 'rem">' +
+      hlFilter(c, filter) +
+      '<button class="clip-share-btn" onclick="shareClip(' + origIdx + ')" title="Compartir en X">𝕏</button>' +
+      copyClipButton({ text: c }) +
+      deleteClipButton({ bookRaw: book.raw, text: c }) +
+    '</div>';
+  }).join('');
+
+  if (remaining > 0) {
+    html += '<div class="clips-more" onclick="loadMoreBookDetail()">' +
+      'Ver más (' + remaining + ' restantes)</div>';
+  }
+
+  document.getElementById('bkd-clips').innerHTML = html;
+}
+
+window.filterBookDetail = function(filter) {
+  bookDetailFilter = filter;
+  clipPages['bkd'] = 1;
+  renderBookDetailClips(filter);
+};
+
+window.loadMoreBookDetail = function() {
+  clipPages['bkd'] = (clipPages['bkd'] || 1) + 1;
+  renderBookDetailClips(bookDetailFilter);
+};
+
+window.backToLibrary = function() {
+  show('screen-app');
+  switchTab('library');
+  window.scrollTo(0, 0);
+};
+
+window.hideActiveBook = function() {
+  const raw = window._activeBrowseBook;
+  if (!raw) return;
+  const m = raw.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+  const title = m ? m[1].trim() : raw;
+  if (!confirm(`¿Ocultar "${title}"? No aparecerá más en búsquedas ni en la Biblioteca.`)) return;
+
+  addHidden(raw);
+  allClippings = allClippings.filter(c => c.bookRaw !== raw);
+  clippings = clippings.filter(c => c.bookRaw !== raw);
+  if (bm25Index) bm25Index = buildBM25(clippings.map(c => c.text));
+  persistIndex();
+
+  window._activeBrowseBook = null;
+  document.getElementById('hide-book-btn').style.display = 'none';
+  populateSidebarBooks();
+  renderLibrary();
+  filterByBook(''); // volver a "Todos"
+};
+
+window.hideCurrentBook = function() {
+  if (!currentBookDetail) return;
+  const raw = currentBookDetail.raw;
+  const title = currentBookDetail.t;
+  if (!raw) return;
+  if (!confirm(`¿Ocultar "${title}"? No aparecerá más en la Biblioteca ni en búsquedas.\nPodés restaurarlo desde "Libros ocultos" en la Biblioteca.`)) return;
+
+  addHidden(raw);
+
+  // Sacar de memoria y reconstruir índice BM25
+  allClippings = allClippings.filter(c => c.bookRaw !== raw);
+  clippings = clippings.filter(c => c.bookRaw !== raw);
+  if (bm25Index) bm25Index = buildBM25(clippings.map(c => c.text));
+  persistIndex();
+
+  backToLibrary();
+  renderLibrary();
+};
+
+// Para restaurar un libro oculto desde la consola del browser:
+// restoreBook('Título exacto del libro (Autor)')
+window.restoreBook = function(raw) {
+  removeHidden(raw);
+  console.log('Libro restaurado:', raw);
+};
+
+// Prepara únicamente la tapa del libro para pegarla en X.
+// El texto de la anotación viaja por separado en el contenido del tuit.
+async function generateQuoteCard(d) {
+  const coverKey = (d.title + '|' + (d.author || '')).toLowerCase();
+  const coverUrl = coverCache[coverKey] || null;
+  if (!coverUrl) return null;
+
+  const img = await new Promise((resolve, reject) => {
+    const el = new Image();
+    el.crossOrigin = 'anonymous';
+    el.onload = () => resolve(el);
+    el.onerror = () => reject(new Error('No se pudo cargar la portada.'));
+    el.src = coverUrl;
+  });
+
+  const scale = Math.min(1, 1200 / img.naturalWidth, 1600 / img.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+window.shareClip = async function(idx) {
+  if (!currentBookDetail) return;
+  const text = currentBookDetail.c[idx];
+  const d = { text, title: currentBookDetail.t, author: currentBookDetail.a };
+  const attr = [currentBookDetail.a, currentBookDetail.t].filter(Boolean).join(', ');
+  const tweet = '"' + text + '"' + (attr ? '\n\n— ' + attr : '');
+
+  try {
+    const canvas = await generateQuoteCard(d);
+    const blob = canvas ? await new Promise(r => canvas.toBlob(r, 'image/png')) : null;
+    if (blob && navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      const tip = document.createElement('div');
+      tip.textContent = '📋 Portada copiada — pegala en X con Ctrl+V / ⌘+V';
+      tip.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0a;color:#fff;padding:0.6rem 1.2rem;border-radius:6px;font-family:"Inter",sans-serif;font-size:0.82rem;z-index:999;opacity:1;transition:opacity 0.4s';
+      document.body.appendChild(tip);
+      setTimeout(() => { tip.style.opacity = '0'; setTimeout(() => tip.remove(), 400); }, 3500);
+    }
+  } catch(e) {
+    console.warn('No se pudo copiar imagen al portapapeles:', e);
+  }
+
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank', 'noopener');
+};
+
+// Compartir un resultado de búsqueda en X
+window._resultShareData = [];
+window.shareResult = async function(idx) {
+  const d = window._resultShareData[idx];
+  if (!d) return;
+
+  const attr = [d.title, d.author].filter(Boolean).join(' — ');
+  const tweet = '"' + d.text + '"' + (attr ? '\n\n— ' + attr : '');
+
+  // Intentar generar y copiar imagen
+  try {
+    const canvas = await generateQuoteCard(d);
+    const blob = canvas ? await new Promise(r => canvas.toBlob(r, 'image/png')) : null;
+    if (blob && navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      const tip = document.createElement('div');
+      tip.textContent = '📋 Portada copiada — pegala en X con Ctrl+V / ⌘+V';
+      tip.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0a;color:#fff;padding:0.6rem 1.2rem;border-radius:6px;font-family:"Inter",sans-serif;font-size:0.82rem;z-index:999;opacity:1;transition:opacity 0.4s';
+      document.body.appendChild(tip);
+      setTimeout(() => { tip.style.opacity = '0'; setTimeout(() => tip.remove(), 400); }, 3500);
+    }
+  } catch(e) {
+    console.warn('No se pudo copiar imagen al portapapeles:', e);
+  }
+
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank', 'noopener');
+};
+
+// ── Add source (merge) ──────────────────────────────────────
+window.toggleAddPanel = function() {
+  const p = document.getElementById('add-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+};
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('add-panel');
+  const btn   = document.getElementById('btn-add-source');
+  if (panel && panel.style.display !== 'none' && !panel.contains(e.target) && !btn?.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
+
+document.getElementById('add-txt-input').addEventListener('change', async e => {
+  if (!e.target.files[0]) return;
+  const text = await e.target.files[0].text();
+  await mergeSource(parseClippings(text));
+  e.target.value = '';
+});
+
+document.getElementById('add-json-input').addEventListener('change', async e => {
+  if (!e.target.files[0]) return;
+  try {
+    let text = await e.target.files[0].text();
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    await mergeSource(parseNewReaderJSON(JSON.parse(text)));
+  } catch(err) {
+    alert('Error al leer el JSON: ' + err.message);
+  }
+  e.target.value = '';
+});
+
+async function mergeSource(newClips) {
+  show('screen-progress');
+  ['step-parse','step-filter','step-index','step-done'].forEach(s => setStep(s, ''));
+  // Enrich already indexed duplicates with dates from a newer export. This lets
+  // users re-import the same BOOX JSON to obtain chronological ordering without
+  // having to delete their saved index first.
+  const incomingByKey = new Map(newClips.map(c => [persistentClipKey(c), c]));
+  const addMissingDate = c => {
+    const incoming = incomingByKey.get(persistentClipKey(c));
+    return !c.highlightDate && incoming?.highlightDate
+      ? { ...c, highlightDate: incoming.highlightDate, year: incoming.year ?? c.year }
+      : c;
+  };
+  allClippings = allClippings.map(addMissingDate);
+  clippings = clippings.map(addMissingDate);
+  const existingKeys = new Set(allClippings.map(persistentClipKey));
+  const accepted = filterClippingsAll(newClips).filter(c => !existingKeys.has(persistentClipKey(c)));
+  setProg(5, 'Fusionando fuentes...', '', `${accepted.length} anotaciones realmente nuevas`);
+  setStep('step-parse', 'done');
+  setStep('step-filter', 'active');
+  await tick();
+
+  const mergedRaw = [...allClippings, ...accepted];
+  allClippings = filterClippingsAll(mergedRaw);
+  clippings = filterClippings(mergedRaw);
+  setStep('step-filter', 'done');
+
+  setStep('step-index', 'active');
+  setProg(60, 'Reconstruyendo índice BM25...', `${clippings.length.toLocaleString()} fragmentos en total...`, '');
+  await tick();
+  bm25Index = buildBM25(clippings.map(c => c.text));
+  setStep('step-index', 'done');
+  setStep('step-done', 'done');
+  setProg(100, accepted.length ? '¡Nuevas anotaciones indexadas!' : 'No había anotaciones nuevas', '',
+    accepted.length ? `${accepted.length} agregadas` : 'El índice ya estaba actualizado');
+  await tick();
+
+  const books = [...new Set(clippings.map(c => c.bookRaw))].sort();
+  document.getElementById('stats-bar').textContent =
+    `${clippings.length.toLocaleString()} clips · ${books.length} libros`;
+
+  show('screen-app');
+  currentResults = [];
+  document.getElementById('results').innerHTML =
+    `<div class="empty-state"><p class="big">${accepted.length ? accepted.length.toLocaleString() + ' anotaciones nuevas' : 'Todo actualizado'}</p>` +
+    `<p>${clippings.length.toLocaleString()} clips de ${books.length} libros listos para buscar.</p></div>`;
+  renderLibrary();
+  populateSidebarBooks();
+  switchTab('library');
+  persistIndex(); // auto-guardar en background
+}
+
+// Recalcular padding cuando cambia el tamaño de ventana
+window.addEventListener('resize', fixLayout);
+
+// ── Auto-cargar al iniciar ─────────────────────────────────────
+tryAutoLoad();
 </script>
 </body>
 </html>
