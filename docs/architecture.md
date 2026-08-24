@@ -21,6 +21,8 @@ Documentación exhaustiva del código fuente de `kindle_hibrido.html`. El archiv
 13. [Utilidades](#13-utilidades)
 14. [Estructura de datos](#14-estructura-de-datos)
 15. [Flujo de datos completo](#15-flujo-de-datos-completo)
+16. [Tema claro/oscuro y sidebar colapsable](#16-tema-clarooscuro-y-sidebar-colapsable)
+17. [Accesibilidad (contraste WCAG)](#17-accesibilidad-contraste-wcag)
 
 ---
 
@@ -29,20 +31,26 @@ Documentación exhaustiva del código fuente de `kindle_hibrido.html`. El archiv
 ```
 kindle_hibrido.html
 ├── <head>
-│   ├── Google Fonts (Playfair Display + DM Sans)
-│   └── <style> — todo el CSS (~200 líneas)
+│   ├── <script> inline — aplica tema oscuro pre-pintado (evita flash de tema claro)
+│   ├── Google Fonts (Fraunces + Inter)
+│   └── <style> — todo el CSS (~350 líneas, incluye paleta clara/oscura)
 └── <body>
+    ├── .theme-toggle-btn    — botón flotante para alternar tema claro/oscuro
+    ├── .sidebar-expand-btn  — botón para reabrir el sidebar cuando está colapsado
     ├── #screen-upload       — pantalla de carga inicial
     ├── #screen-progress     — pantalla de progreso (parseo + embeddings)
     ├── #screen-app          — pantalla principal de la app
+    │   ├── #sidebar         — columna de menú/filtros, colapsable
     │   ├── #tab-bar         — tabs "Búsqueda" / "Biblioteca"
     │   ├── #search-content  — vista de búsqueda completa
     │   └── #screen-library  — vista de biblioteca
     ├── .save-index-btn      — botón flotante "Guardar índice"
-    └── <script type="module"> — toda la lógica (~500 líneas)
+    └── <script type="module"> — toda la lógica (~550 líneas)
 ```
 
 La única dependencia externa es `@xenova/transformers@2.17.2` cargada desde jsDelivr via ES Module import.
+
+**Tipografía:** Fraunces (serif, para títulos) + Inter (sans, para cuerpo e interfaz) — elegidas como equivalentes gratuitos de las fuentes propietarias de Claude (Copernicus/Tiempos y Styrene), que no están disponibles como webfonts libres. Ver §16 para el detalle del sistema de theming que acompañó este cambio.
 
 ---
 
@@ -460,14 +468,16 @@ function highlightKw(text, terms) {
 
 Los términos de búsqueda se resaltan con `<mark>` dentro del texto escapado. El escape HTML se aplica **antes** del highlight para evitar XSS.
 
-**Color-coding de resultados:**
+**Clasificación por score (sin indicador visual):**
 
 ```javascript
 const hybPct = Math.round(c.hybrid * 100);
-const cls = hybPct >= 65 ? 'high'   // borde verde
-           : hybPct >= 35 ? 'mid'    // borde amarillo
-           :                'low';   // borde gris
+const cls = hybPct >= 65 ? 'high'
+           : hybPct >= 35 ? 'mid'
+           :                'low';
 ```
+
+La clase `high`/`mid`/`low` se sigue calculando y asignando a cada `.h-card`/`.clip-item`, pero ya no tiene efecto visual: se eliminó el `border-left` de color (verde/amarillo/gris) que antes decoraba cada subrayado, a pedido del usuario ("hay una linea que acompania a cada subrayado que no quiero que salga"). Las reglas `.h-card.high`, `.h-card.mid` y `.h-card.low` fueron borradas del CSS. La relevancia del resultado se sigue comunicando únicamente vía los `score-pill` (sem/kw/híbrido).
 
 **Score badges:** solo se muestran los scores relevantes según el modo:
 
@@ -693,3 +703,75 @@ Float32Array[] (un vector 384-dim por texto)                   │
                      ▼ renderResults()
                HTML en #results
 ```
+
+---
+
+## 16. Tema claro/oscuro y sidebar colapsable
+
+### Tema claro/oscuro
+
+Toda la paleta de colores está definida con custom properties CSS en `:root`, incluyendo variables nuevas agregadas junto con el modo oscuro: `--card`, `--accent-bg`, `--accent-fg`, `--overlay-subtle`, `--shadow`, `--cat-accent` (además de las preexistentes `--ink`, `--ink-2`, `--ink-3`, `--paper`, `--paper-2`, `--paper-3`, `--accent`, `--line`).
+
+El modo oscuro se activa agregando la clase `dark-theme` al elemento `<html>`. Un bloque `html.dark-theme { ... }` sobreescribe todas las variables con sus equivalentes oscuros. También se declara `color-scheme: light` / `dark` para que los controles nativos del browser (selects, scrollbars) respeten el tema.
+
+**Evitar flash de tema claro (FOUC):** el tema se aplica *antes* de pintar, mediante un `<script>` inline ubicado justo después de `<title>` (antes de que se cargue el CSS/JS del módulo):
+
+```html
+<script>
+  try { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark-theme'); } catch(e) {}
+</script>
+```
+
+Si este script corriera después (por ejemplo dentro del `<script type="module">`, que se ejecuta de forma diferida), el usuario vería un parpadeo de tema claro antes de que se aplique el oscuro.
+
+**Toggle:**
+
+```javascript
+window.toggleTheme = function() {
+  document.documentElement.classList.toggle('dark-theme');
+  const isDark = document.documentElement.classList.contains('dark-theme');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  // sincroniza el ícono del botón .theme-toggle-btn
+};
+```
+
+El botón `.theme-toggle-btn` (flotante, agregado justo después de `<body>`) llama a `toggleTheme()` y su ícono/texto se sincroniza con el estado guardado al cargar la página.
+
+**Casos especiales resueltos:**
+- `<mark>` (highlight de keywords) tiene colores propios en modo oscuro (`html.dark-theme .h-text mark`, `html.dark-theme .clip-item mark`) para que el resaltado amarillo siga siendo legible sobre fondo oscuro.
+- Reglas que combinaban `background: var(--ink)` con `color: #fff` (ej. `.btn-search`, `.score-pill`) se cambiaron a `color: var(--paper)`, para que ambos valores se inviertan juntos al cambiar de tema — con `#fff` fijo, el texto blanco se volvía invisible sobre fondo claro en modo oscuro (`--ink` pasa a ser claro).
+- Todos los `background: white` / `background: #fff` hardcodeados (upload-box, search-input, cards, paneles, headers, etc.) se reemplazaron por `background: var(--card)`.
+
+### Sidebar colapsable
+
+El sidebar (`#sidebar`, columna de menú y filtros) se puede ocultar/mostrar:
+
+```javascript
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  // persiste el estado en localStorage.sidebarCollapsed
+};
+```
+
+CSS relevante:
+
+```css
+#sidebar { transition: width 0.18s ease; }
+#sidebar.collapsed { width: 0 !important; overflow: hidden; border-right: none; }
+```
+
+- `.sidebar-collapse-btn` (dentro de `.sidebar-brand`) colapsa el sidebar.
+- `.sidebar-expand-btn` (fuera del sidebar, visible solo cuando está colapsado) lo vuelve a mostrar.
+- El estado se persiste en `localStorage.sidebarCollapsed` y se restaura al cargar la página.
+
+**Interacción con el resize por arrastre:** el sidebar ya tenía una feature previa de ancho ajustable por drag (mousedown/mousemove/mouseup, persistida en `localStorage.sidebarWidth`). La transición CSS (`transition: width 0.18s ease`) se desactiva momentáneamente durante el arrastre (`sidebar.style.transition = 'none'`) y se reactiva al soltar, para que el resize manual sea instantáneo y no quede "amortiguado" por la animación del collapse.
+
+---
+
+## 17. Accesibilidad (contraste WCAG)
+
+Ajustes de contraste realizados para cumplir el estándar WCAG AA (4.5:1 para texto normal, 3:1 para texto grande):
+
+- **`--ink-3`** (color de texto terciario/secundario, usado en metadatos): oscurecido de `#888888` a `#6f6f6f` en modo claro. El valor original daba ~3.56:1 contra blanco, por debajo del mínimo 4.5:1.
+- **`--cat-accent`** (color de acento de las etiquetas de categoría en el sidebar, antes `#8B5E3C` hardcodeado): en modo oscuro usa `#caa06c` en lugar del mismo marrón, ya que `#8B5E3C` sobre fondo oscuro da solo ~3.36:1; `#caa06c` da ~7.35:1.
+- **Tamaños de fuente aumentados** en elementos de categoría, que habían quedado visualmente pequeños tras el cambio de tipografía a Inter: `.sidebar-section-title` (0.62rem → 0.68rem), `.sidebar-cat-label` (0.8rem → 0.86rem), `.sidebar-cat-arrow` (0.6rem → 0.66rem), `#book-cat-selector` (0.73rem → 0.78rem), `.cat-icon` (1rem → 1.05rem), `.cat-name` (1.1rem → 1.18rem, peso 500 → 600), `.cat-count`/`.cat-arrow` (0.72rem → 0.76rem).
