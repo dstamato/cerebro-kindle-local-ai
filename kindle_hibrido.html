@@ -1109,6 +1109,21 @@ function filterClippings(clips) {
     });
 }
 
+// Orden canónico dentro de un libro: del subrayado más antiguo al más
+// reciente. Los clips sin fecha quedan al final y conservan su orden previo.
+function sortClippingsChronologically(clips) {
+  return clips.map((clip, index) => ({ clip, index })).sort((a, b) => {
+    const aTime = a.clip.highlightDate ? Date.parse(a.clip.highlightDate) : NaN;
+    const bTime = b.clip.highlightDate ? Date.parse(b.clip.highlightDate) : NaN;
+    const aHasDate = Number.isFinite(aTime);
+    const bHasDate = Number.isFinite(bTime);
+    if (aHasDate && bHasDate) return aTime - bTime || a.index - b.index;
+    if (aHasDate) return -1;
+    if (bHasDate) return 1;
+    return a.index - b.index;
+  }).map(({ clip }) => clip);
+}
+
 // Botón y acción para eliminar una anotación de forma persistente. La "tumba"
 // queda guardada aunque el mismo JSON vuelva a importarse más adelante.
 window._deleteClipData = [];
@@ -1847,7 +1862,7 @@ window.saveRenameTheme = function(ti, newName) {
   const name = newName.trim();
   if (name) bookThemesStore[bookRaw].themes[ti] = name;
   saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
-  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const clips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
   document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
 };
 
@@ -1856,7 +1871,7 @@ window.moveClipToTheme = function(ck, newTi) {
   if (!bookRaw || !bookThemesStore[bookRaw]) return;
   bookThemesStore[bookRaw].assignments[ck] = newTi;
   saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
-  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const clips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
   document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
 };
 
@@ -1865,7 +1880,7 @@ window.addTheme = function() {
   if (!bookRaw || !bookThemesStore[bookRaw]) return;
   bookThemesStore[bookRaw].themes.push('Nuevo grupo');
   saveBookThemes(bookRaw, bookThemesStore[bookRaw]);
-  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const clips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
   document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
   // Auto-abrir rename en el nuevo grupo
   const newIdx = bookThemesStore[bookRaw].themes.length - 1;
@@ -1885,14 +1900,14 @@ window.deleteTheme = function(ti) {
   });
   data.themes.splice(ti, 1);
   saveBookThemes(bookRaw, data);
-  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const clips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
   document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
 };
 
 window.reClusterBook = function() {
   const bookRaw = window._activeBrowseBook;
   if (!bookRaw) return;
-  const clips = allClippings.filter(c => c.bookRaw === bookRaw);
+  const clips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
   const data = autoClusterClips(clips);
   saveBookThemes(bookRaw, data);
   document.getElementById('results').innerHTML = renderBookBrowseWithThemes(bookRaw, clips);
@@ -1935,7 +1950,7 @@ window.filterByBook = function(bookRaw) {
     }
 
     // Mostrar TODOS los clips del libro desde allClippings (sin cap)
-    const bookClips = allClippings.filter(c => c.bookRaw === bookRaw);
+    const bookClips = sortClippingsChronologically(allClippings.filter(c => c.bookRaw === bookRaw));
     const meta = bookClips[0] || {};
     const displayTitle = meta.bookTitle || (bookRaw.match(/^(.+?)\s*\(/) ? bookRaw.match(/^(.+?)\s*\(/)[1].trim() : bookRaw);
     const displayAuthor = meta.bookAuthor || '';
