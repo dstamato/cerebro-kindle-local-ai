@@ -214,10 +214,10 @@
 
   <div class="upload-box" id="drop-zone">
     <h2>Cargá tu biblioteca</h2>
-    <p>Arrastrá tu <strong>My_Clippings.txt</strong> acá,<br>o hacé click para seleccionarlo.</p>
+    <p>Arrastrá tu <strong>My_Clippings.txt</strong> o el <strong>JSON del BOOX</strong> acá,<br>o hacé click para seleccionarlo.</p>
     <p style="margin-top:0.8rem;font-size:0.75rem;opacity:0.7;">Los datos se guardan localmente en SQLite.</p>
     <button class="btn-primary" onclick="document.getElementById('file-input').click();event.stopPropagation()">Seleccionar archivo</button>
-    <input type="file" id="file-input" accept=".txt">
+    <input type="file" id="file-input" accept=".txt,.json,application/json">
   </div>
 
   <div class="or-divider" id="or-existing" style="display:none">o continuá con tus datos guardados</div>
@@ -264,8 +264,8 @@
         <button class="btn-search" id="btn-search" onclick="doSearch()">Buscar</button>
       </div>
       <div id="stats-bar"></div>
-      <button class="btn-update" onclick="document.getElementById('update-input').click()" title="Actualizar con un nuevo My_Clippings.txt">⟳ Actualizar</button>
-      <input type="file" id="update-input" accept=".txt">
+      <button class="btn-update" onclick="document.getElementById('update-input').click()" title="Actualizar con My_Clippings.txt o un JSON del BOOX">⟳ Actualizar</button>
+      <input type="file" id="update-input" accept=".txt,.json,application/json">
     </header>
 
     <div class="chips-row">

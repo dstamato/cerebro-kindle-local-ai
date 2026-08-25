@@ -28,6 +28,7 @@ def init_db() -> None:
                 book_id   INTEGER NOT NULL REFERENCES books(id),
                 text      TEXT    NOT NULL,
                 year      INTEGER,
+                added_at  TEXT,
                 embedding BLOB    NOT NULL
             );
             CREATE TABLE IF NOT EXISTS ignored_books (
@@ -39,6 +40,7 @@ def init_db() -> None:
         for stmt in [
             "ALTER TABLE books ADD COLUMN category  TEXT NOT NULL DEFAULT 'Sin categoría'",
             "ALTER TABLE books ADD COLUMN cover_url TEXT",
+            "ALTER TABLE clippings ADD COLUMN added_at TEXT",
         ]:
             try:
                 conn.execute(stmt)
@@ -91,8 +93,8 @@ def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
                     ).fetchone()["id"]
 
             conn.execute(
-                "INSERT INTO clippings (book_id, text, year, embedding) VALUES (?, ?, ?, ?)",
-                (book_id_map[raw], clip["text"], clip["year"],
+                "INSERT INTO clippings (book_id, text, year, added_at, embedding) VALUES (?, ?, ?, ?, ?)",
+                (book_id_map[raw], clip["text"], clip["year"], clip.get("addedAt"),
                  emb.astype(np.float32).tobytes()),
             )
         conn.commit()
@@ -101,7 +103,7 @@ def clear_and_insert(parsed: list[dict], embeddings: np.ndarray,
 def load_corpus() -> tuple[list[dict], np.ndarray | None]:
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT c.id, c.book_id, c.text, c.year, c.embedding,"
+            "SELECT c.id, c.book_id, c.text, c.year, c.added_at, c.embedding,"
             "       b.raw, b.title, b.author "
             "FROM clippings c JOIN books b ON b.id = c.book_id ORDER BY c.id"
         ).fetchall()
@@ -119,6 +121,7 @@ def load_corpus() -> tuple[list[dict], np.ndarray | None]:
             "bookAuthor": r["author"],
             "text": r["text"],
             "year": r["year"],
+            "addedAt": r["added_at"],
         })
         vecs.append(np.frombuffer(r["embedding"], dtype=np.float32).copy())
 
@@ -148,7 +151,9 @@ def get_books_by_category() -> list[dict]:
 def get_book_clippings(book_id: int) -> list[dict]:
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT id, text, year FROM clippings WHERE book_id = ? ORDER BY id",
+            "SELECT id, text, year, added_at AS addedAt FROM clippings WHERE book_id = ? "
+            "ORDER BY CASE WHEN added_at IS NULL THEN 1 ELSE 0 END, added_at ASC, "
+            "CASE WHEN year IS NULL THEN 1 ELSE 0 END, year ASC, id ASC",
             (book_id,),
         ).fetchall()
     return [dict(r) for r in rows]
